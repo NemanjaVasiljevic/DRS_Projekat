@@ -12,3 +12,8 @@ class RegisterForm(FlaskForm):
     password1 = PasswordField(label='Password:')
     password2 = PasswordField(label='Confirm password:')
     submit = SubmitField(label='Register')
+    
+class LoginForm(FlaskForm):
+    email_address = StringField(label='Email address: ')
+    password = PasswordField(label='Password: ')
+    submit = SubmitField(label='Login')

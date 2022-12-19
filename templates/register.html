@@ -1,12 +1,13 @@
 {% extends 'base.html' %}
 {% block title %}
-    Register Page
+    Register page
 {% endblock %}
 
 {% block content %}
 <div class="container-sm">
     <form method="POST" class="form-register">
-        <h1 class="" style="text-align:center">
+        {{ form.hidden_tag() }}
+        <h1 style="text-align:center">
             Create account
         </h1>
         {{ form.name.label() }}
@@ -47,7 +48,7 @@
 
         <div class="checkbox mb-3" style="text-align:center">
            <h6>Already have an account?</h6>
-           <a class="btn btn-sm btn-primary" href="#">Login</a>
+           <a class="btn btn-sm btn-primary" href="{{ url_for('login_page') }}">Login</a>
         </div>
 
         {{ form.submit(class="btn btn-lg btn-block btn-success") }}
