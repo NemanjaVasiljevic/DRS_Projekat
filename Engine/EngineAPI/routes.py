@@ -31,3 +31,31 @@ def login():
             return 'Wrong password!', 404
         
     return 'User does not exist!', 404
+
+@app.route('/edit_profile', methods=["POST"])
+def edit_profile():
+    user = UserSchema().load(request.get_json())
+    user_to_edit = User.query.filter_by(id = user.id).first()
+    
+    if user_to_edit:
+        try:
+            user_to_edit.name = user.name
+            user_to_edit.last_name = user.last_name
+            user_to_edit.address = user.address
+            user_to_edit.city = user.city
+            user_to_edit.country = user.country
+            user_to_edit.tel_number = user.tel_number
+            if user.password != "":
+                user_to_edit.password = user.password
+                
+            db.session.commit()
+            
+            ret_user = UserSchema().dump(user)
+            ret_user["password"] = ""
+            return jsonify(ret_user), 202
+        except Exception:
+            return "Unable to edit user.", 406
+    
+    return "User does not exist!", 404
+    
+    

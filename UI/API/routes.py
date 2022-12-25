@@ -1,5 +1,5 @@
 from flask import Flask, render_template, flash, redirect, url_for, jsonify, request, json, session
-from API.forms import RegisterForm, LoginForm
+from API.forms import RegisterForm, LoginForm, EditProfileForm
 from API.models.user import User, UserSchema, LoginSchema
 from flask_login import login_user
 from urllib import request as req
@@ -76,3 +76,36 @@ def logout_page():
         flash(f"Successfully logged out.", category='info')
         
     return render_template('home.html')
+
+@app.route('/edit_profile', methods=["GET", "POST"])
+def edit_profile_page():
+    form = EditProfileForm()
+    if "user" in session:
+        if request.method == "POST":
+            user_to_change = User(form.name.data, form.last_name.data, form.address.data, form.city.data, form.country.data, form.tel_number.data, form.email_address.data, form.password1.data)
+            user_to_change.id = session["user"]["id"]
+            
+            data = UserSchema().dump(user_to_change)
+            data = jsonify(data).get_data()
+            zahtev = req.Request("http://127.0.0.1:5000/edit_profile")
+            zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+            zahtev.add_header('Content-Length', len(data))
+            
+            try:
+                ret = req.urlopen(zahtev, data)
+            except HTTPError as e:
+                flash(e.read().decode(), category='danger')
+                return render_template("edit_profile.html", form=form)
+            
+            user = json.loads(ret.read())
+            session["user"] = user
+            flash('Successfully edited profile.', category='info')
+            return redirect(url_for("home_page"))
+        
+        if form.errors != {}:
+            for err_msg in form.errors.values():
+                flash(err_msg.pop(), category='danger')
+
+        return render_template('edit_profile.html', form=form)
+        
+    return redirect(url_for('login_page'))

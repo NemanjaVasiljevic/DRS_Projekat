@@ -26,6 +26,9 @@
         <ul class="navbar-nav">
           {% if session["user"] %}
             <li class="nav-item">
+              <a class="btn btn-outline-primary navbar-btn mr-1" href="{{ url_for('edit_profile_page') }}">Edit profile</a>
+            </li>
+            <li class="nav-item">
               <a class="btn btn-primary navbar-btn mr-1" href="{{ url_for('logout_page') }}">Logout</a>
             </li>
           {% else %}
