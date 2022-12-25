@@ -27,3 +27,7 @@ class UserSchema(Schema):
     @post_load
     def make_user(self,data,**kwargs):
         return User(**data)
+    
+class LoginSchema(Schema):
+    email_address = fields.Email()
+    password = fields.String()

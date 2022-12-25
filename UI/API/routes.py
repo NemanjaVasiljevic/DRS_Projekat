@@ -1,6 +1,6 @@
-from flask import Flask, render_template, flash, redirect, url_for, jsonify, request
+from flask import Flask, render_template, flash, redirect, url_for, jsonify, request, json, session
 from API.forms import RegisterForm, LoginForm
-from API.models.user import User, UserSchema
+from API.models.user import User, UserSchema, LoginSchema
 from flask_login import login_user
 from urllib import request as req
 from urllib.error import HTTPError
@@ -10,7 +10,7 @@ from API import app
 @app.route('/')
 @app.route('/home')
 def home_page():
-    return render_template('home.html')
+    return render_template("home.html")
 
 @app.route('/register', methods=["POST", "GET"])
 def register_page():
@@ -45,5 +45,34 @@ def register_page():
 @app.route('/login', methods=["POST", "GET"])
 def login_page():
     form = LoginForm()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            user_to_login = LoginSchema().load({"email_address":form.email_address.data, "password":form.password.data})
+            data = jsonify(user_to_login).get_data()
+            zahtev = req.Request("http://127.0.0.1:5000/login")
+            zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+            zahtev.add_header('Content-Length', len(data))
+            try:
+                ret = req.urlopen(zahtev, data)
+            except HTTPError as e:
+                flash(e.read().decode(), category='danger')
+                return render_template("login.html", form=form)
+            
+            user = json.loads(ret.read())
+            session["user"] = user
+            flash(f"Successfully logged in as {user['name']}.", category='success')
+            return redirect(url_for("home_page"))
+        
+        if form.errors != {}:
+            for err_msg in form.errors.values():
+                flash(err_msg.pop(), category='danger')
+
     return render_template('login.html', form=form)
 
+@app.route('/logout')
+def logout_page():
+    if "user" in session:
+        session.pop("user")
+        flash(f"Successfully logged out.", category='info')
+        
+    return render_template('home.html')

@@ -24,7 +24,6 @@ class User(db.Model):
         self.email_address = email_address
         self.password = password
 
-
 class UserSchema(Schema):
     id = fields.Number()
     name = fields.String()
@@ -39,3 +38,7 @@ class UserSchema(Schema):
     @post_load
     def make_user(self,data,**kwargs):
         return User(**data)
+    
+class LoginSchema(Schema):
+    email_address = fields.Email()
+    password = fields.String()
