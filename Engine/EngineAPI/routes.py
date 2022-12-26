@@ -1,5 +1,6 @@
 from EngineAPI import app, db
 from EngineAPI.models.user import UserSchema, LoginSchema, User
+from EngineAPI.models.creditCard import CreditCard, CreditCardSchema
 from flask import request, jsonify, json, session
 from flask_login import login_user, current_user, login_required
 
@@ -58,4 +59,13 @@ def edit_profile():
     
     return "User does not exist!", 404
     
-    
+@app.route('/add_card', methods=["POST", "GET"])
+def add_card():
+    card = CreditCardSchema().load(request.get_json())
+    try:
+        db.session.add(card)
+        db.session.commit()
+    except Exception:
+        return 'NEUSPESNO', 500
+            
+    return 'USPESNO', 200
