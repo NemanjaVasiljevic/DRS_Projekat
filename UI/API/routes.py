@@ -1,6 +1,7 @@
 from flask import Flask, render_template, flash, redirect, url_for, jsonify, request, json, session
-from API.forms import RegisterForm, LoginForm, EditProfileForm
+from API.forms import RegisterForm, LoginForm, EditProfileForm,CreditCardFrom
 from API.models.user import User, UserSchema, LoginSchema
+from API.models.creditCard import CreditCard, CreditCardSchema
 from flask_login import login_user
 from urllib import request as req
 from urllib.error import HTTPError
@@ -109,3 +110,30 @@ def edit_profile_page():
         return render_template('edit_profile.html', form=form)
         
     return redirect(url_for('login_page'))
+
+@app.route('/add_card', methods=["POST", "GET"])
+def addCard_page():
+    form = CreditCardFrom()
+    if form.validate_on_submit():
+        card_to_add = CreditCard(form.cardNum.data, form.ownerName.data, form.expDate.data, form.securityCode.data)
+        
+        data = CreditCardSchema().dump(card_to_add)
+        data = jsonify(data).get_data()
+        zahtev = req.Request("http://127.0.0.1:5000/add_card")
+        zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+        zahtev.add_header('Content-Length', len(data))
+        
+        try:
+                ret = req.urlopen(zahtev, data)
+        except HTTPError as e:
+            flash(e.read().decode(), category='danger')
+            return render_template("creditCard.html", form=form)
+            
+        flash(ret.read().decode(), category='success')
+        return redirect(url_for("home_page"))
+
+    if form.errors != {}:
+        for err_msg in form.errors.values():
+            flash(err_msg.pop(), category='danger')
+            
+    return render_template('creditCard.html', form=form)
