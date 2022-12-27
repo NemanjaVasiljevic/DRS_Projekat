@@ -1,5 +1,6 @@
 from EngineAPI import app, db
 from EngineAPI.models.user import UserSchema, LoginSchema, User
+from EngineAPI.models.creditCard import CreditCard, CreditCardSchema
 from flask import request, jsonify, json, session
 from flask_login import login_user, current_user, login_required
 
@@ -11,9 +12,9 @@ def register():
         db.session.add(user)
         db.session.commit()
     except Exception:
-        return 'NEUSPESNO', 500
+        return f'User with email {user.email_address} already exists.', 406
     
-    return 'USPESNO', 200
+    return 'Successfully created account!', 201
 
 @app.route('/login', methods=["POST"])
 def login():
@@ -58,4 +59,16 @@ def edit_profile():
     
     return "User does not exist!", 404
     
-    
+@app.route('/add_card', methods=["POST", "GET"])
+def add_card():
+    card = CreditCardSchema().load(request.get_json())
+    user = User.query.filter_by(id=card.owner).first()
+    try:
+        card.amount -= 1
+        user.verified = True
+        db.session.add(card)
+        db.session.commit()
+    except Exception:
+        return 'Something went wrong. Try again.', 406
+            
+    return 'Successfully added credit card. You have been charged 1$ for verification.', 201

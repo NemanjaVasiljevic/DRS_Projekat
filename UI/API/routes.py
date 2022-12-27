@@ -1,6 +1,7 @@
 from flask import Flask, render_template, flash, redirect, url_for, jsonify, request, json, session
-from API.forms import RegisterForm, LoginForm, EditProfileForm
+from API.forms import RegisterForm, LoginForm, EditProfileForm,CreditCardFrom
 from API.models.user import User, UserSchema, LoginSchema
+from API.models.creditCard import CreditCard, CreditCardSchema
 from flask_login import login_user
 from urllib import request as req
 from urllib.error import HTTPError
@@ -82,30 +83,70 @@ def edit_profile_page():
     form = EditProfileForm()
     if "user" in session:
         if request.method == "POST":
-            user_to_change = User(form.name.data, form.last_name.data, form.address.data, form.city.data, form.country.data, form.tel_number.data, form.email_address.data, form.password1.data)
-            user_to_change.id = session["user"]["id"]
-            
-            data = UserSchema().dump(user_to_change)
-            data = jsonify(data).get_data()
-            zahtev = req.Request("http://127.0.0.1:5000/edit_profile")
-            zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
-            zahtev.add_header('Content-Length', len(data))
-            
-            try:
-                ret = req.urlopen(zahtev, data)
-            except HTTPError as e:
-                flash(e.read().decode(), category='danger')
-                return render_template("edit_profile.html", form=form)
-            
-            user = json.loads(ret.read())
-            session["user"] = user
-            flash('Successfully edited profile.', category='info')
-            return redirect(url_for("home_page"))
+            if form.validate_on_submit():
+                user_to_change = User(form.name.data, form.last_name.data, form.address.data, form.city.data, form.country.data, form.tel_number.data, form.email_address.data, form.password1.data)
+                user_to_change.id = session["user"]["id"]
+                
+                data = UserSchema().dump(user_to_change)
+                data = jsonify(data).get_data()
+                zahtev = req.Request("http://127.0.0.1:5000/edit_profile")
+                zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+                zahtev.add_header('Content-Length', len(data))
+                
+                try:
+                    ret = req.urlopen(zahtev, data)
+                except HTTPError as e:
+                    flash(e.read().decode(), category='danger')
+                    return render_template("edit_profile.html", form=form)
+                
+                user = json.loads(ret.read())
+                session["user"] = user
+                flash('Successfully edited profile.', category='info')
+                return redirect(url_for("home_page"))
         
-        if form.errors != {}:
-            for err_msg in form.errors.values():
-                flash(err_msg.pop(), category='danger')
+            if form.errors != {}:
+                for err_msg in form.errors.values():
+                    flash(err_msg.pop(), category='danger')
 
         return render_template('edit_profile.html', form=form)
+        
+    return redirect(url_for('login_page'))
+
+@app.route('/add_card', methods=["POST", "GET"])
+def addCard_page():
+    form = CreditCardFrom()
+    if "user" in session:
+        if session["user"]["verified"] == False:
+            if request.method == "POST":
+                if form.validate_on_submit():
+                    card_to_add = CreditCard(form.cardNum.data, form.expDate.data, form.securityCode.data)
+                    card_to_add.owner = session["user"]["id"]
+                    
+                    data = CreditCardSchema().dump(card_to_add)
+                    data.pop('id')
+                    data = jsonify(data).get_data()
+                    zahtev = req.Request("http://127.0.0.1:5000/add_card")
+                    zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+                    zahtev.add_header('Content-Length', len(data))
+                    
+                    try:
+                        ret = req.urlopen(zahtev, data)
+                    except HTTPError as e:
+                        flash(e.read().decode(), category='danger')
+                        return render_template("creditCard.html", form=form)
+                        
+                    flash(ret.read().decode(), category='success')
+                    session["user"]["verified"] = True
+                    return redirect(url_for("home_page"))
+
+                if form.errors != {}:
+                    for err_msg in form.errors.values():
+                        flash(err_msg.pop(), category='danger')
+                
+            return render_template('creditCard.html', form=form)
+        
+        else:
+            flash('Account already verified.', category='primary')
+            return redirect(url_for('home_page'))
         
     return redirect(url_for('login_page'))

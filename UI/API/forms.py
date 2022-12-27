@@ -30,3 +30,9 @@ class EditProfileForm(FlaskForm):
     password1 = PasswordField(label='Password:', validators=[Length(min=6)])
     password2 = PasswordField(label='Confirm password:', validators=[EqualTo('password1', 'Passwords do not match.')])
     submit = SubmitField(label='Save changes')
+    
+class CreditCardFrom(FlaskForm):
+    cardNum = StringField(label='Card number: ', validators=[Length(min = 16, max = 16),DataRequired()])
+    expDate = StringField(label='Expiration date: ', validators=[Length(min = 5, max = 5),DataRequired()])
+    securityCode = StringField(label='Security code: ', validators=[Length(min = 3, max = 3),DataRequired()])
+    submit = SubmitField(label='Add card')
