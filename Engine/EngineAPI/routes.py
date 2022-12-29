@@ -1,6 +1,6 @@
 from EngineAPI import app, db
 from EngineAPI.models.user import UserSchema, LoginSchema, User
-from EngineAPI.models.creditCard import CreditCard, CreditCardSchema
+from EngineAPI.models.credit_card import CreditCard, CreditCardSchema
 from flask import request, jsonify, json, session
 from flask_login import login_user, current_user, login_required
 

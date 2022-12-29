@@ -1,7 +1,7 @@
 from flask import Flask, render_template, flash, redirect, url_for, jsonify, request, json, session
 from API.forms import RegisterForm, LoginForm, EditProfileForm,CreditCardFrom
 from API.models.user import User, UserSchema, LoginSchema
-from API.models.creditCard import CreditCard, CreditCardSchema
+from API.models.credit_card import CreditCard, CreditCardSchema
 from flask_login import login_user
 from urllib import request as req
 from urllib.error import HTTPError
@@ -133,7 +133,7 @@ def addCard_page():
                         ret = req.urlopen(zahtev, data)
                     except HTTPError as e:
                         flash(e.read().decode(), category='danger')
-                        return render_template("creditCard.html", form=form)
+                        return render_template("credit_card.html", form=form)
                         
                     flash(ret.read().decode(), category='success')
                     session["user"]["verified"] = True
@@ -143,7 +143,7 @@ def addCard_page():
                     for err_msg in form.errors.values():
                         flash(err_msg.pop(), category='danger')
                 
-            return render_template('creditCard.html', form=form)
+            return render_template('credit_card.html', form=form)
         
         else:
             flash('Account already verified.', category='primary')
