@@ -1,6 +1,7 @@
 from EngineAPI import app, db
 from EngineAPI.models.user import UserSchema, LoginSchema, User
 from EngineAPI.models.credit_card import CreditCard, CreditCardSchema
+from EngineAPI.models.account_balance import Account_balance, Account_balanceSchema
 from flask import request, jsonify, json, session
 from flask_login import login_user, current_user, login_required
 
@@ -8,8 +9,11 @@ from flask_login import login_user, current_user, login_required
 @app.route('/register', methods=["POST"])
 def register():
     user = UserSchema().load(request.get_json())
+    wallet = Account_balance("RSD",0) #kontam da treba da ima account_balance cim se registruje   
     try:
+        #ovde nekako da dobavimo id od usera koji se trenutno registruje
         db.session.add(user)
+        db.session.add(wallet)
         db.session.commit()
     except Exception:
         return f'User with email {user.email_address} already exists.', 406
@@ -72,3 +76,8 @@ def add_card():
         return 'Something went wrong. Try again.', 406
             
     return 'Successfully added credit card. You have been charged 1$ for verification.', 201
+
+
+""" @app.route('/pay', methods=["POST", "GET"])
+def add_funds():
+     """
