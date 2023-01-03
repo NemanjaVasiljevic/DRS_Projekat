@@ -30,6 +30,12 @@
                 <a class="btn btn-outline-success navbar-btn mr-1" href="{{ url_for('addCard_page') }}">Verify account</a>
               </li>
             {% endif %}
+            {% if session["user"]["verified"] == 1 %}
+            <li class="nav-item">
+              <a class="btn btn-outline-success navbar-btn mr-1" href="{{ url_for('pay_page') }}">Deposited money</a>
+            </li>
+            {% endif %}
+            
             <li class="nav-item">
               <a class="btn btn-outline-primary navbar-btn mr-1" href="{{ url_for('edit_profile_page') }}">Edit profile</a>
             </li>

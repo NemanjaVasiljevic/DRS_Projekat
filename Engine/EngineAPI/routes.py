@@ -1,6 +1,7 @@
 from EngineAPI import app, db
 from EngineAPI.models.user import UserSchema, LoginSchema, User
 from EngineAPI.models.creditCard import CreditCard, CreditCardSchema
+from EngineAPI.models.account_balance import Account_balance, Account_balanceSchema
 from flask import request, jsonify, json, session
 from flask_login import login_user, current_user, login_required
 
@@ -72,3 +73,17 @@ def add_card():
         return 'Something went wrong. Try again.', 406
             
     return 'Successfully added credit card. You have been charged 1$ for verification.', 201
+
+@app.route('/pay', methods=["POST", "GET"])
+def pay():
+    added_valeue = Account_balanceSchema().load(request.get_json())
+    user = User.query.filter_by(id=added_valeue.user_id).first()
+    card=CreditCard.query.filter_by(owner=user.id)
+    try:
+        card.amount -= added_valeue.amount
+        db.session.add(added_valeue)
+        db.session.commit()
+    except Exception:
+        return 'Something went wrong. Try again.', 406
+            
+    return 'You have successfully deposited money into your account', 201

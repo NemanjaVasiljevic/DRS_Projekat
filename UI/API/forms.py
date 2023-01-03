@@ -36,3 +36,7 @@ class CreditCardFrom(FlaskForm):
     expDate = StringField(label='Expiration date: ', validators=[Length(min = 5, max = 5),DataRequired()])
     securityCode = StringField(label='Security code: ', validators=[Length(min = 3, max = 3),DataRequired()])
     submit = SubmitField(label='Add card')
+
+class PayIntoAnAccountForm(FlaskForm):
+    amount =StringField(label='Enter the amount you want to pay: ', validators=[Length(min = 1, max =1000000),DataRequired()])
+    submit = SubmitField(label='Pay')    

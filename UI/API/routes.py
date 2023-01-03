@@ -1,8 +1,9 @@
 from flask import Flask, render_template, flash, redirect, url_for, jsonify, request, json, session
-from API.forms import RegisterForm, LoginForm, EditProfileForm,CreditCardFrom
+from API.forms import RegisterForm, LoginForm, EditProfileForm,CreditCardFrom,PayIntoAnAccountForm
 from API.models.user import User, UserSchema, LoginSchema
 from API.models.creditCard import CreditCard, CreditCardSchema
-from flask_login import login_user
+from API.models.account_balance import Account_balance,AccountBalanceSchema
+from flask_login import login_user 
 from urllib import request as req
 from urllib.error import HTTPError
 
@@ -149,4 +150,37 @@ def addCard_page():
             flash('Account already verified.', category='primary')
             return redirect(url_for('home_page'))
         
+    return redirect(url_for('login_page'))
+
+
+@app.route('/pay', methods=["POST", "GET"])
+def pay_page():
+    form = PayIntoAnAccountForm()
+    if "user" in session:
+        if session["user"]["verified"] == True:
+            if request.method == "POST":
+                if form.validate_on_submit():
+                    balance_to_add = Account_balance(form.amount)
+                    balance_to_add.user_id=session["user"]["id"]
+                    data = AccountBalanceSchema().dump(balance_to_add)
+                    data.pop('id')
+                    data = jsonify(data).get_data()
+                    zahtev = req.Request("http://127.0.0.1:5000/pay")
+                    zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+                    zahtev.add_header('Content-Length', len(data))
+                    
+                    try:
+                        ret = req.urlopen(zahtev, data)
+                    except HTTPError as e:
+                        flash(e.read().decode(), category='danger')
+                        return render_template("pay.html", form=form)
+                        
+                    flash(ret.read().decode(), category='success')
+                    return redirect(url_for("home_page"))
+
+                if form.errors != {}:
+                    for err_msg in form.errors.values():
+                        flash(err_msg.pop(), category='danger')
+                
+            return render_template('pay.html', form=form)
     return redirect(url_for('login_page'))
