@@ -9,7 +9,10 @@ from flask_login import login_user, current_user, login_required
 @app.route('/register', methods=["POST"])
 def register():
     user = UserSchema().load(request.get_json())
-    wallet = Account_balance("RSD",0) #kontam da treba da ima account_balance cim se registruje   
+    wallet = Account_balance("RSD",0)  
+    last_user = User.query.all() #ovde pokupi sve usere
+    last_user_id = last_user[-1].id #ovde uzme id poslednjeg
+    wallet.user_id = last_user_id + 1 #ovde poveca za 1 jer to ce biti id ovog sto se upravo sad registruje
     try:
         #ovde nekako da dobavimo id od usera koji se trenutno registruje
         db.session.add(user)
@@ -78,6 +81,3 @@ def add_card():
     return 'Successfully added credit card. You have been charged 1$ for verification.', 201
 
 
-""" @app.route('/pay', methods=["POST", "GET"])
-def add_funds():
-     """
