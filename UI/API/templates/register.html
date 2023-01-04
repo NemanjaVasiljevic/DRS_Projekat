@@ -4,11 +4,11 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-sm">
+<div class="container-sm" id="registerId">
     <form method="POST" class="form-register">
         {{ form.hidden_tag() }}
         <h1 style="text-align:center">
-            Create account
+            Create an account
         </h1>
         {{ form.name.label() }}
         {{ form.name(class="form-control", placeholder="Name") }}

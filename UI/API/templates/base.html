@@ -1,4 +1,110 @@
 <!doctype html>
+
+<style>
+
+h6
+{
+  color:azure;
+}
+h1
+{
+  color:azure;
+}
+.body
+{
+  background-color:rgb(0, 26, 49);;
+  
+}
+.link { color:azure; }
+
+.link:hover { 
+  color: #000000; 
+  text-decoration: none;
+}
+
+.center {
+  
+  width: 100px;
+  height: 100px;
+  position: absolute;
+  top: 50%;
+  left: 60%;
+  margin: -50px 0 0 -50px;
+}
+
+.alignleft
+{
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  margin: -50px 0 0 -50px;
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(-200%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+img {  
+  /* This section calls the slideInFromLeft animation we defined above */
+  animation: 1.5s ease-out 0s 1 slideInFromLeft;
+  
+}
+
+.welcome
+{
+  color: azure;
+  animation: 1.5s ease-out 0s 1 slideInFromLeft;
+  position: absolute;
+  top: 20%;
+  left: 30%;
+  margin: -50px 0 0 -50px;
+  font-size: 45px;
+}
+
+#loginId
+{
+  animation: 1.5s ease-out 0s 1 slideInFromLeft;
+  background-color: #4254f5;
+  position: absolute;
+  top: 20%;
+  left: 5%;
+  height: 450px;
+  border: 5px solid #000;
+  border-radius: 15px;
+  -moz-border-radius: 15px;
+}
+
+#registerId
+{
+  animation: 1.5s ease-out 0s 1 slideInFromLeft;
+  background-color: #4254f5;
+  position: absolute;
+  top: 10%;
+  left: 5%;
+  height: 1100px;
+  border: 5px solid #000;
+  border-radius: 15px;
+  -moz-border-radius: 15px;
+}
+
+#editProfileId
+{
+  animation: 1.5s ease-out 0s 1 slideInFromLeft;
+  background-color: #4254f5;
+  position: absolute;
+  top: 10%;
+  left: 18%;
+  height: 1000px;
+  border: 5px solid #000;
+  border-radius: 15px;
+  -moz-border-radius: 15px;
+}
+</style>
 <html lang="en">
    <head>
       <!-- Required meta tags -->
@@ -12,12 +118,14 @@
           {% endblock %}
       </title>
    </head>
-   <body>
-    <nav class="navbar navbar-expand-md navbar-light" style="background-color:#e3f2fd;">
+   <body class="body">
+    
+   
+    <nav class="navbar navbar-expand-md navbar-light" style="background-color:#5d70a5;">
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-                <a class="nav-link" href="{{ url_for('home_page') }}">Home <span class="sr-only">(current)</span></a>
+                <a  class=" link" href="{{ url_for('home_page') }}" style="font-size: 20px;"><b>Home</b> <span class="sr-only">(current)</span></a>
             </li>
             <!--li class="nav-item">
                 <a class="nav-link" href="#">Market</a>
@@ -28,6 +136,11 @@
             {% if session["user"]["verified"] == 0 %}
               <li class="nav-item">
                 <a class="btn btn-outline-success navbar-btn mr-1" href="{{ url_for('addCard_page') }}">Verify account</a>
+              </li>
+            {% endif %}
+            {% if session["user"]["verified"] == 1 %}
+              <li class="nav-item">
+                <a class="btn btn-outline-success navbar-btn mr-1" href="{{ url_for('add_funds_page') }}">Add funds</a>
               </li>
             {% endif %}
             <li class="nav-item">
@@ -47,6 +160,10 @@
         </ul>
       </div>
     </nav>
+    
+
+    
+    
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
@@ -62,6 +179,7 @@
   {% block content %}
 
   {% endblock %}
+  
   
 
       <!-- Optional JavaScript -->
