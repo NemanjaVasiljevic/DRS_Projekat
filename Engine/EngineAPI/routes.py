@@ -81,3 +81,27 @@ def add_card():
     return 'Successfully added credit card. You have been charged 1$ for verification.', 201
 
 
+@app.route('/add_funds', methods=["POST", "GET"])
+def add_funds():
+    added_valeue = Account_balanceSchema().load(request.get_json())  
+    user = User.query.filter_by(id=added_valeue.user_id).first()
+    card=CreditCard.query.filter_by(owner=user.id).first()
+    current_balance = Account_balance.query.filter_by(user_id = user.id).first()
+    
+    print('Ispred try')
+    try:
+        print('U try')
+        
+        if card.amount < added_valeue.amount:
+            return 'Nemas para', 406
+        
+        print('Prosao if')
+        
+        card.amount = card.amount - added_valeue.amount
+        current_balance.amount = current_balance.amount + added_valeue.amount
+        db.session.commit()
+    except Exception:
+        return 'Something went wrong. Try again.', 406
+            
+    return 'You have successfully deposited money into your account', 201
+

@@ -36,3 +36,10 @@ class CreditCardFrom(FlaskForm):
     expDate = StringField(label='Expiration date: ', validators=[Length(min = 5, max = 5),DataRequired()])
     securityCode = StringField(label='Security code: ', validators=[Length(min = 3, max = 3),DataRequired()])
     submit = SubmitField(label='Add card')
+    
+    
+class AccountBalanceForm(FlaskForm):
+    amount = StringField(label='Add funds: ', validators=[Length(min = 1, max = 256),DataRequired()])
+    submit = SubmitField(label='Add funds')
+    
+    
