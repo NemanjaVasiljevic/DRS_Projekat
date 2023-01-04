@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}
+    Edit profile
+{% endblock %}
+
+{% block content %}
+<div class="container-sm" id="editProfileId">
+    <form method="POST" class="form-register">
+        {{ form.hidden_tag() }}
+        <h1 style="text-align:center">
+            Edit profile
+        </h1>
+        {{ form.name.label() }}
+        {{ form.name(class="form-control", placeholder="Name", value=session["user"]["name"]) }}
+        <br>
+
+        {{ form.last_name.label() }}
+        {{ form.last_name(class="form-control", placeholder="Last name", value=session["user"]["last_name"]) }}
+        <br>
+
+        {{ form.address.label() }}
+        {{ form.address(class="form-control", placeholder="Address", value=session["user"]["address"]) }}
+        <br>
+
+        {{ form.city.label() }}
+        {{ form.city(class="form-control", placeholder="City", value=session["user"]["city"]) }}
+        <br>
+
+        {{ form.country.label() }}
+        {{ form.country(class="form-control", placeholder="Country", value=session["user"]["country"]) }}
+        <br>
+
+        {{ form.tel_number.label() }}
+        {{ form.tel_number(class="form-control", placeholder="Phone number", value=session["user"]["tel_number"]) }}
+        <br>
+
+        {{ form.email_address.label() }}
+        {{ form.email_address(class="form-control", value=session["user"]["email_address"]) }}
+        <br>
+
+        {{ form.password1.label() }}
+        {{ form.password1(class="form-control", placeholder="Password") }}
+        <br>
+
+        {{ form.password2.label() }}
+        {{ form.password2(class="form-control", placeholder="Confirm password") }}
+        <br>
+
+        {{ form.submit(class="btn btn-lg btn-block btn-success") }}
+        <br>
+
+    </form>
+</div>
+{% endblock %}
