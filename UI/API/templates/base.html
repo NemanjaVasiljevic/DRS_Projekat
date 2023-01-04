@@ -2,6 +2,42 @@
 
 <style>
 
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #333541;
+  min-width: 250px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: azure;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+#dropDownMenu:hover
+{
+    color:#000000;
+}
+
+
+
+
 h6
 {
   color:azure;
@@ -12,13 +48,19 @@ h1
 }
 .body
 {
-  background-color:rgb(0, 26, 49);;
+  background-color:rgb(0, 26, 49);
   
+  
+}
+
+label
+{
+  color : azure;
 }
 .link { color:azure; }
 
 .link:hover { 
-  color: #807d7d; 
+  color: #000000; 
   text-decoration: none;
 }
 
@@ -70,14 +112,11 @@ img {
 {
   animation: 1.5s ease-out 0s 1 slideInFromLeft;
   background-color: #4254f5;
-  margin: 0 auto;
   height: 450px;
   width: 700px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  margin-left: -350px;
-  margin-top: -225px;
+  position:absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+  margin: auto;
   border: 5px solid #000;
   border-radius: 15px;
   -moz-border-radius: 15px;
@@ -87,14 +126,11 @@ img {
 {
   animation: 1.5s ease-out 0s 1 slideInFromLeft;
   background-color: #4254f5;
-  position: absolute;
   height: 1050px;
   width:800px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  margin-left: -400px;
-  margin-top: -400px;
+  position:absolute;
+  top: 100px;left: 0; right: 0;
+  margin: auto;
   border: 5px solid #000;
   border-radius: 15px;
   -moz-border-radius: 15px;
@@ -104,13 +140,11 @@ img {
 {
   animation: 1.5s ease-out 0s 1 slideInFromLeft;
   background-color: #4254f5;
-  position: absolute;
   height: 1000px;
   width:800px;
-  top: 50%;
-  left: 50%;
-  margin-left: -400px;
-  margin-top: -400px;
+  position:absolute;
+  top: 100px;left: 0; right: 0;
+  margin: auto;
   border: 5px solid #000;
   border-radius: 15px;
   -moz-border-radius: 15px;
@@ -132,15 +166,27 @@ img {
    <body class="body">
     
    
-    <nav class="navbar navbar-expand-md navbar-light" style="background-color:#0c044e;">
+    <nav class="navbar navbar-expand-md navbar-light" style="background-color:#333541;">
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
                 <a  class=" link" href="{{ url_for('home_page') }}" style="font-size: 20px;"><b>Home</b> <span class="sr-only">(current)</span></a>
             </li>
-            <!--li class="nav-item">
-                <a class="nav-link" href="#">Market</a>
-            </li-->
+            {% if session["user"] %}
+            {% if session["user"]["verified"] == 0 %}
+            <li class="nav-item">
+              <div class="dropdown">
+                <a href="#" class="link" id="dropDownMenu" style="font-size: 20px;margin-left: 20px;"><b>Transactions</b><span class="sr-only">(current)</span> </a>
+                <div class="dropdown-content">
+                  <a class="link" href="#">Execute a transaction</a>
+                  <a class="link" href="#">Transaction history</a>
+                  
+                  </div>
+              </div>
+            </li>
+         
+            {% endif %}
+            {% endif %}
         </ul>
         <ul class="navbar-nav">
           {% if session["user"] %}
