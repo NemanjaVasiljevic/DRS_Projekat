@@ -4,6 +4,17 @@ from EngineAPI.models.credit_card import CreditCard, CreditCardSchema
 from EngineAPI.models.account_balance import Account_balance, Account_balanceSchema
 from flask import request, jsonify, json, session
 from flask_login import login_user, current_user, login_required
+import requests
+
+
+#pomocna funkcija
+def get_value(to_currency, from_currency):
+    url = "https://api.exchangerate-api.com/v4/latest/" + to_currency
+
+    response = requests.request("GET", url)
+    result = json.loads(response.text)
+    resenje = result.get("rates")
+    return resenje[from_currency]
 
 
 @app.route('/register', methods=["POST"])
@@ -71,7 +82,8 @@ def add_card():
     card = CreditCardSchema().load(request.get_json())
     user = User.query.filter_by(id=card.owner).first()
     try:
-        card.amount -= 1
+        value = get_value('USD', 'RSD')
+        card.amount = card.amount - value
         user.verified = True
         db.session.add(card)
         db.session.commit()
@@ -83,25 +95,21 @@ def add_card():
 
 @app.route('/add_funds', methods=["POST", "GET"])
 def add_funds():
-    added_valeue = Account_balanceSchema().load(request.get_json())  
-    user = User.query.filter_by(id=added_valeue.user_id).first()
+    added_value = Account_balanceSchema().load(request.get_json())  
+    user = User.query.filter_by(id=added_value.user_id).first()
     card=CreditCard.query.filter_by(owner=user.id).first()
     current_balance = Account_balance.query.filter_by(user_id = user.id).first()
-    
-    print('Ispred try')
+
     try:
-        print('U try')
+        if card.amount < added_value.amount:
+            return "You don't have enough money on credit card.", 406
         
-        if card.amount < added_valeue.amount:
-            return 'Nemas para', 406
-        
-        print('Prosao if')
-        
-        card.amount = card.amount - added_valeue.amount
-        current_balance.amount = current_balance.amount + added_valeue.amount
+        card.amount = card.amount - added_value.amount
+        current_balance.amount = current_balance.amount + added_value.amount
         db.session.commit()
     except Exception:
         return 'Something went wrong. Try again.', 406
             
-    return 'You have successfully deposited money into your account', 201
+    return 'You have successfully deposited money into your account', 200
+
 

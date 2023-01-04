@@ -35,7 +35,7 @@ def register_page():
                 return render_template("register.html", form=form)
                 
             flash(ret.read().decode(), category='success')
-            return redirect(url_for("home_page"))
+            return redirect(url_for("login_page"))
         
         if form.errors != {}:
             for err_msg in form.errors.values():
