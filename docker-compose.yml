@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  engine:
+    build: ./Engine
+    ports:
+    - "5000:5000"
+
+  ui:
+    build: ./UI
+    ports:
+    - "5001:5001"

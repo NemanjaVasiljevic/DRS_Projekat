@@ -4,16 +4,15 @@ Pay into an account
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-sm-2"></div>
-        <div class="col-sm-8">
-            <div class="panel panel-default" style="margin:5%">
-                <div class="panel-body" style="border-radius: 25px; padding:5%; background-color: whitesmoke;">
+<div class="container" id="addFunds">
+    <div class="row" style="background: transparent;">
+        <div class="col-sm-2" style="background: transparent;"></div>
+        <div class="col-sm-8" style="background: transparent;">
+            <div class="panel panel-default" style="margin:5%;background: transparent;">
+                <div  style="border-radius: 25px; padding:5%; background-color: #4254f5;">
                     <form method="POST">
                         {{form.hidden_tag()}}
-                        <h1 style="text-align: center;">Pay into an account</h1>
-                        <h2 style="text-align: center;">Current card balance: {card.amount}</h2>
+                        <h1 style="text-align: center;">Add funds to your online wallet</h1>
                         {{ form.amount.label() }}
                         {{ form.amount(class="form-control") }}
                         <br>
