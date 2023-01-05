@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}
+    Wallet page
+{% endblock %}
+
+{% block content %}
+    <br><h1 style="text-align:center">Account balance</h1>
+    <div class="row" style="margin-top:20px; margin-left:150px; margin-right:150px">
+       <table class="table table-hover table-dark">
+          <thead>
+             <tr>
+                <!-- Your Columns HERE -->
+                <th scope="col">Currency</th>
+                <th scope="col">Amount</th>
+             </tr>
+          </thead>
+          <tbody>
+             <!-- Your rows inside the table HERE: -->
+             {% for item in wallet %}
+             <tr>
+                <td>{{ item.currency }}</td>
+                <td>{{ item.amount }}</td>
+
+             </tr>
+             {% endfor %}
+          </tbody>
+       </table>
+    </div>
+{% endblock %}

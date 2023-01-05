@@ -110,6 +110,10 @@ def add_funds():
     except Exception:
         return 'Something went wrong. Try again.', 406
             
-    return 'You have successfully deposited money into your account', 200
+    return 'You have successfully deposited money into your account.', 200
 
 
+@app.route('/wallet/<id>', methods=["GET"])
+def wallet(id):
+    wallet_list = Account_balance.query.filter_by(user_id=id).all()
+    return jsonify(Account_balanceSchema().dump(wallet_list, many=True)), 200

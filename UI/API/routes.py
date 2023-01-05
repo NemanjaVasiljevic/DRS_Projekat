@@ -152,8 +152,6 @@ def addCard_page():
         
     return redirect(url_for('login_page'))
 
-
-
 @app.route('/add_funds', methods=["POST", "GET"])
 def add_funds_page():
     form = AccountBalanceForm()
@@ -178,11 +176,27 @@ def add_funds_page():
                         return render_template("add_funds.html", form=form)
                         
                     flash(ret.read().decode(), category='success')
-                    return redirect(url_for("home_page"))
+                    return redirect(url_for("wallet_page"))
 
                 if form.errors != {}:
                     for err_msg in form.errors.values():
                         flash(err_msg.pop(), category='danger')
                 
             return render_template('add_funds.html', form=form)
+        
     return redirect(url_for('login_page'))
+
+
+@app.route('/wallet', methods=["GET"])
+def wallet_page():
+    if "user" in session:
+        
+        try:
+            ret = req.urlopen(f"http://127.0.0.1:5000/wallet/{session['user']['id']}")
+            wallet = json.loads(ret.read())
+            return render_template('wallet.html', wallet=wallet)
+        except HTTPError as e:
+            flash(e.read().decode(), category='danger')
+            return redirect(url_for("home_page"))
+    
+    return redirect(url_for("login_page"))
