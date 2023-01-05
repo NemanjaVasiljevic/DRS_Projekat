@@ -3,6 +3,19 @@
 <style>
 
 
+.meniLink
+{
+  color:azure;
+}
+.meniLink:hover
+{
+  text-decoration: none;
+  color:azure;
+}
+#meniPng:hover
+{
+  cursor:pointer;
+}
 .dropdown {
   position: relative;
   display: inline-block;
@@ -24,7 +37,7 @@
   display: block;
 }
 
-.dropdown-content a:hover {background-color: #f1f1f1}
+.dropdown-content a:hover {background-color: #ffffff}
 
 .dropdown:hover .dropdown-content {
   display: block;
@@ -32,7 +45,7 @@
 
 #dropDownMenu:hover
 {
-    color:#000000;
+    color:rgb(0, 0, 0);
 }
 
 
@@ -149,6 +162,16 @@ img {
   border-radius: 15px;
   -moz-border-radius: 15px;
 }
+#addFunds
+{
+  animation: 1.5s ease-out 0s 1 slideInFromLeft;
+  height: 450px;
+  width: 700px;
+  position:absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+  margin: auto;
+  background:transparent;
+}
 </style>
 <html lang="en">
    <head>
@@ -157,6 +180,10 @@ img {
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       <!-- Bootstrap CSS -->
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
+        integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
       <title>
           {% block title %}
 
@@ -172,27 +199,36 @@ img {
             <li class="nav-item active">
                 <a  class=" link" href="{{ url_for('home_page') }}" style="font-size: 20px;"><b>Home</b> <span class="sr-only">(current)</span></a>
             </li>
-            {% if session["user"] %}
-            {% if session["user"]["verified"] == 0 %}
-            <li class="nav-item">
-              <div class="dropdown">
-                <a href="#" class="link" id="dropDownMenu" style="font-size: 20px;margin-left: 20px;"><b>Transactions</b><span class="sr-only">(current)</span> </a>
-                <div class="dropdown-content">
-                  <a class="link" href="#">Execute a transaction</a>
-                  <a class="link" href="#">Transaction history</a>
-                  
-                  </div>
-              </div>
-            </li>
-         
-            {% endif %}
-            {% endif %}
+          </li>
+          {% if session["user"] %}
+          {% if session["user"]["verified"] == 1 %}
+          <li class="nav-item">
+            <div class="dropdown">
+              <a href="#" class="meniLink"id="dropDownMenu" style="font-size: 20px;margin-left: 20px;"><b>Transactions</b><i style="margin-left: 5px;" class="fa-solid fa-caret-down"></i></a>
+              <div class="dropdown-content">
+                <a class="link" href="#">Execute a transaction</a>
+                <a class="link" href="#">Transaction history</a>
+                
+                </div>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="link"  style="font-size: 20px;margin-left: 20px;"><b>Wallet</b><span class="sr-only">(current)</span> </a>
+          </li>
+       
+          {% endif %}
+          {% endif %}
         </ul>
         <ul class="navbar-nav">
           {% if session["user"] %}
             {% if session["user"]["verified"] == 0 %}
               <li class="nav-item">
                 <a class="btn btn-outline-success navbar-btn mr-1" href="{{ url_for('addCard_page') }}">Verify account</a>
+              </li>
+            {% endif %}
+            {% if session["user"]["verified"] == 1 %}
+              <li class="nav-item">
+                <a class="btn btn-outline-success navbar-btn mr-1" href="{{ url_for('add_funds_page') }}">Add funds</a>
               </li>
             {% endif %}
             <li class="nav-item">
