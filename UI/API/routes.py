@@ -236,28 +236,30 @@ def currency_exchange_page():
                     
                     rate = table[form.to_currency.data]
                     
-                    if int(form.amount.data) > 0:
+                    if form.amount.data == '':
+                        flash('Amount cannot be empty!', category='danger')
+                        return redirect(url_for("currency_exchange_page"))
                     
-                        data = {'user_id': session["user"]["id"], 'from_currency': form.from_currency.data, 
-                                'to_currency': form.to_currency.data, 'amount': form.amount.data, 'rate': rate}
-                        
-                        data = jsonify(data).get_data()
-                        zahtev = req.Request("http://127.0.0.1:5000/currency_exchange")
-                        zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
-                        zahtev.add_header('Content-Length', len(data))
-                        
-                        try:
-                            ret = req.urlopen(zahtev, data)
-                        except HTTPError as e:
-                            flash(e.read().decode(), category='danger')
-                            return render_template("add_funds.html", form=form)
-                            
-                        flash(ret.read().decode(), category='success')
-                        return redirect(url_for("wallet_page"))
-                    
-                    else:
+                    if int(form.amount.data) == 0:
                         flash('Amount must be greater than 0.', category='danger')
                         return redirect(url_for("currency_exchange_page"))
+
+                    data = {'user_id': session["user"]["id"], 'from_currency': form.from_currency.data, 
+                            'to_currency': form.to_currency.data, 'amount': form.amount.data, 'rate': rate}
+                    
+                    data = jsonify(data).get_data()
+                    zahtev = req.Request("http://127.0.0.1:5000/currency_exchange")
+                    zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+                    zahtev.add_header('Content-Length', len(data))
+                    
+                    try:
+                        ret = req.urlopen(zahtev, data)
+                    except HTTPError as e:
+                        flash(e.read().decode(), category='danger')
+                        return redirect(url_for('add_funds_page'))
+                        
+                    flash(ret.read().decode(), category='success')
+                    return redirect(url_for("wallet_page"))
                 
                 if form.refresh.data:
                     
