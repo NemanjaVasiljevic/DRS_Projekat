@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}
+    Currency exchange page
+{% endblock %}
+
+{% block content %}
+    <div class="row" style="margin-top:20px; margin-left:30px; margin-right:30px">
+        <div class="col-6">
+            <h1 style="text-align:center">Exchange rates table</h1>
+            <br>
+            <table class="table table-hover table-dark" style="text-align:center">
+                <thead>
+                    <tr>
+                        <!-- Your Columns HERE -->
+                        <th scope="col">Currency</th>
+                        <th scope="col">Exchange rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in table.items() %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-6">
+            <h1 style="text-align:center">Exchange</h1>
+            <br>
+            <div style="margin-left:50px; margin-right:30px">
+                <form method="POST" class="form-exchange">
+                    {{ form.hidden_tag() }}
+                    <table style="width:100%">
+                        <tr>
+                            <td style="width:15%"><p style="color:white"><b>From: </b></p></td>
+                            <td style="text-align:center; width:60%">{{ form.from_currency(class="form-control") }}</td>
+                            <td style="text-align:right; width:25%">{{ form.refresh(class="btn btn-info") }}</td>
+                        </tr>
+                    </table><br><br>
+
+                    <table style="width:100%">
+                        <tr style="height:50%">
+                            <td style="width:15%"><p style="color:white"><b>To: </b></p></td>
+                            <td style="width:85%">{{ form.to_currency(class="form-control") }}</td>
+                        </tr>
+                    </table><br><br>
+
+                    <table style="width:100%">
+                        <tr style="height:50%">
+                            <td style="width:15%"><p style="color:white"><b>Amount: </b></p></td>
+                            <td style="width:85%">{{ form.amount(class="form-control") }}</td>
+                        </tr>
+                    </table><br><br>
+                    
+                    {{ form.submit(class="btn btn-lg btn-block btn-success", style="float: right; width:85%") }}
+                </form>
+            </div>
+        </div>
+    </div>
+ {% endblock %}

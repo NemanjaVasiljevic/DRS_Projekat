@@ -1,5 +1,5 @@
 from EngineAPI import app, db
-from EngineAPI.models.user import UserSchema, LoginSchema, User
+from EngineAPI.models.user import UserSchema, LoginSchema, User, ExchangeSchema
 from EngineAPI.models.credit_card import CreditCard, CreditCardSchema
 from EngineAPI.models.account_balance import Account_balance, Account_balanceSchema
 from flask import request, jsonify, json, session
@@ -117,3 +117,39 @@ def add_funds():
 def wallet(id):
     wallet_list = Account_balance.query.filter_by(user_id=id).all()
     return jsonify(Account_balanceSchema().dump(wallet_list, many=True)), 200
+
+
+@app.route('/currency_exchange', methods=["POST"])
+def currency_exchange():
+    data = ExchangeSchema().dump(request.get_json()) 
+    
+    account_balance = Account_balance.query.filter_by(user_id=data["user_id"]).all()
+    exists = False
+    try:
+        for item in account_balance:
+            if item.currency == data["from_currency"]:
+                if item.amount < data["amount"]:
+                    return "You don't have enough money for exchange.", 400
+                
+                item.amount -= data["amount"]
+                db.session.commit()
+                
+            if item.currency == data["to_currency"]:
+                exists = True
+                item.amount += data["amount"] * data["rate"]
+                db.session.commit()
+                
+        if not exists:
+            amount = data["amount"] * data["rate"]
+            new_item = Account_balance(data["to_currency"], amount)
+            new_item.user_id = data["user_id"]
+            db.session.add(new_item)
+            db.session.commit()
+            
+        return F"Successfully exchanged {data['amount']} {data['from_currency']} to {data['to_currency']}.", 200
+                
+    except Exception:
+        return "Something went wrong. Try again!", 400
+            
+            
+        
