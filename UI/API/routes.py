@@ -24,7 +24,7 @@ def register_page():
             data = UserSchema().dump(user_to_create)
             data.pop('id')
             data = jsonify(data).get_data()
-            zahtev = req.Request("http://127.0.0.1:5000/register")
+            zahtev = req.Request("http://engine-container:5000/register")
             zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
             zahtev.add_header('Content-Length', len(data))
             
@@ -51,7 +51,7 @@ def login_page():
         if form.validate_on_submit():
             user_to_login = LoginSchema().load({"email_address":form.email_address.data, "password":form.password.data})
             data = jsonify(user_to_login).get_data()
-            zahtev = req.Request("http://127.0.0.1:5000/login")
+            zahtev = req.Request("http://engine-container:5000/login")
             zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
             zahtev.add_header('Content-Length', len(data))
             try:
@@ -90,7 +90,7 @@ def edit_profile_page():
                 
                 data = UserSchema().dump(user_to_change)
                 data = jsonify(data).get_data()
-                zahtev = req.Request("http://127.0.0.1:5000/edit_profile")
+                zahtev = req.Request("http://engine-container:5000/edit_profile")
                 zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
                 zahtev.add_header('Content-Length', len(data))
                 
@@ -126,7 +126,7 @@ def addCard_page():
                     data = CreditCardSchema().dump(card_to_add)
                     data.pop('id')
                     data = jsonify(data).get_data()
-                    zahtev = req.Request("http://127.0.0.1:5000/add_card")
+                    zahtev = req.Request("http://engine-container:5000/add_card")
                     zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
                     zahtev.add_header('Content-Length', len(data))
                     
@@ -165,7 +165,7 @@ def add_funds_page():
                     data = Account_balanceSchema().dump(balance_to_add)
                     data.pop('id')
                     data = jsonify(data).get_data()
-                    zahtev = req.Request("http://127.0.0.1:5000/add_funds")
+                    zahtev = req.Request("http://engine-container:5000/add_funds")
                     zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
                     zahtev.add_header('Content-Length', len(data))
                     
@@ -192,7 +192,7 @@ def wallet_page():
     if "user" in session:
         
         try:
-            ret = req.urlopen(f"http://127.0.0.1:5000/wallet/{session['user']['id']}")
+            ret = req.urlopen(f"http://engine-container:5000/wallet/{session['user']['id']}")
             wallet = json.loads(ret.read())
             return render_template('wallet.html', wallet=wallet)
         except HTTPError as e:

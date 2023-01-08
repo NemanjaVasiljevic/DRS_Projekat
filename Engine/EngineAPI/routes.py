@@ -6,7 +6,6 @@ from flask import request, jsonify, json, session
 from flask_login import login_user, current_user, login_required
 import requests
 
-
 #pomocna funkcija
 def get_value(to_currency, from_currency):
     url = "https://api.exchangerate-api.com/v4/latest/" + to_currency
@@ -22,8 +21,11 @@ def register():
     user = UserSchema().load(request.get_json())
     wallet = Account_balance("RSD",0)  
     last_user = User.query.all() #ovde pokupi sve usere
-    last_user_id = last_user[-1].id #ovde uzme id poslednjeg
-    wallet.user_id = last_user_id + 1 #ovde poveca za 1 jer to ce biti id ovog sto se upravo sad registruje
+    if len(last_user) != 0:
+        last_user_id = last_user[-1].id #ovde uzme id poslednjeg
+        wallet.user_id = last_user_id + 1 #ovde poveca za 1 jer to ce biti id ovog sto se upravo sad registruje
+    else:
+        wallet.user_id = 1
     try:
         #ovde nekako da dobavimo id od usera koji se trenutno registruje
         db.session.add(user)
