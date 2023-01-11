@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import Length, EqualTo, Email, DataRequired, ValidationError
 
 class RegisterForm(FlaskForm):
@@ -42,4 +42,9 @@ class AccountBalanceForm(FlaskForm):
     amount = StringField(label='Amount: ', validators=[Length(min = 1, max = 256),DataRequired()])
     submit = SubmitField(label='Add funds')
     
-    
+class ExchangeForm(FlaskForm):
+    from_currency = SelectField(validators=[])
+    to_currency = SelectField(validators=[])
+    amount = StringField(validators=[])
+    refresh = SubmitField(label="Refresh table")
+    submit = SubmitField(label="Exchange")

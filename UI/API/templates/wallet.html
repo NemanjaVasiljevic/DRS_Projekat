@@ -5,8 +5,8 @@
 
 {% block content %}
     <br><h1 style="text-align:center">Account balance</h1>
-    <div class="row" style="margin-top:20px; margin-left:150px; margin-right:150px">
-       <table class="table table-hover table-dark">
+    <div class="row" style="margin-top:20px; margin-left:250px; margin-right:250px">
+       <table class="table table-hover table-dark" style="text-align:center">
           <thead>
              <tr>
                 <!-- Your Columns HERE -->
@@ -20,7 +20,6 @@
              <tr>
                 <td>{{ item.currency }}</td>
                 <td>{{ item.amount }}</td>
-
              </tr>
              {% endfor %}
           </tbody>

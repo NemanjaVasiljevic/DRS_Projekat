@@ -46,3 +46,10 @@ class UserSchema(Schema):
 class LoginSchema(Schema):
     email_address = fields.Email()
     password = fields.String()
+    
+class ExchangeSchema(Schema):
+    user_id = fields.Number()
+    from_currency = fields.String()
+    to_currency = fields.String()
+    amount = fields.Number()
+    rate = fields.Number()

@@ -1,11 +1,12 @@
 from flask import Flask, render_template, flash, redirect, url_for, jsonify, request, json, session
-from API.forms import RegisterForm, LoginForm, EditProfileForm,CreditCardFrom, AccountBalanceForm
+from API.forms import RegisterForm, LoginForm, EditProfileForm,CreditCardFrom, AccountBalanceForm, ExchangeForm
 from API.models.user import User, UserSchema, LoginSchema
 from API.models.credit_card import CreditCard, CreditCardSchema
 from API.models.account_balance import Account_balance, Account_balanceSchema
 from flask_login import login_user
 from urllib import request as req
 from urllib.error import HTTPError
+import requests
 
 from API import app
 
@@ -198,5 +199,88 @@ def wallet_page():
         except HTTPError as e:
             flash(e.read().decode(), category='danger')
             return redirect(url_for("home_page"))
+    
+    return redirect(url_for("login_page"))
+
+
+def get_from_currencies():
+    try:
+        ret = req.urlopen(f"http://engine-container:5000/wallet/{session['user']['id']}")
+        result = json.loads(ret.read())
+        currencies = [r["currency"] for r in result]
+        return currencies
+    except HTTPError as e:
+        flash(e.read().decode(), category='danger')
+        return redirect(url_for("home_page"))
+    
+def get_exchange_rates(from_currency):
+    url = "https://api.exchangerate-api.com/v4/latest/" + from_currency
+    response = requests.request("GET", url)
+    result = json.loads(response.text)
+    table = result.get("rates")
+    table.pop(from_currency)
+    return table
+
+
+@app.route('/currency_exchange', methods=["POST", "GET"])
+def currency_exchange_page():
+    form = ExchangeForm()
+    
+    if "user" in session:
+        
+        if request.method == "POST":
+            if form.is_submitted():
+                if form.submit.data:
+                    
+                    table = get_exchange_rates(form.from_currency.data)
+                    
+                    rate = table[form.to_currency.data]
+                    
+                    if form.amount.data == '':
+                        flash('Amount cannot be empty!', category='danger')
+                        return redirect(url_for("currency_exchange_page"))
+                    
+                    if int(form.amount.data) == 0:
+                        flash('Amount must be greater than 0.', category='danger')
+                        return redirect(url_for("currency_exchange_page"))
+
+                    data = {'user_id': session["user"]["id"], 'from_currency': form.from_currency.data, 
+                            'to_currency': form.to_currency.data, 'amount': form.amount.data, 'rate': rate}
+                    
+                    data = jsonify(data).get_data()
+                    zahtev = req.Request("http://engine-container:5000/currency_exchange")
+                    zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+                    zahtev.add_header('Content-Length', len(data))
+                    
+                    try:
+                        ret = req.urlopen(zahtev, data)
+                    except HTTPError as e:
+                        flash(e.read().decode(), category='danger')
+                        return redirect(url_for('add_funds_page'))
+                        
+                    flash(ret.read().decode(), category='success')
+                    return redirect(url_for("wallet_page"))
+                
+                if form.refresh.data:
+                    
+                    from_currencies = get_from_currencies()
+                    form.from_currency.choices = from_currencies
+                    
+                    table = get_exchange_rates(form.from_currency.data)
+                    
+                    form.to_currency.choices = [key for key, value in table.items()]
+            
+                    return render_template('currency_exchange.html', table=table, form=form)
+        
+
+        from_currencies = get_from_currencies()
+        form.from_currency.choices = from_currencies
+        
+        table = get_exchange_rates(from_currencies[0])
+        
+        form.to_currency.choices = [key for key, value in table.items()]
+            
+        return render_template('currency_exchange.html', table=table, form=form)
+            
     
     return redirect(url_for("login_page"))

@@ -1,10 +1,11 @@
 from EngineAPI import app, db
-from EngineAPI.models.user import UserSchema, LoginSchema, User
+from EngineAPI.models.user import UserSchema, LoginSchema, User, ExchangeSchema
 from EngineAPI.models.credit_card import CreditCard, CreditCardSchema
 from EngineAPI.models.account_balance import Account_balance, Account_balanceSchema
 from flask import request, jsonify, json, session
 from flask_login import login_user, current_user, login_required
 import requests
+
 
 #pomocna funkcija
 def get_value(to_currency, from_currency):
@@ -21,11 +22,8 @@ def register():
     user = UserSchema().load(request.get_json())
     wallet = Account_balance("RSD",0)  
     last_user = User.query.all() #ovde pokupi sve usere
-    if len(last_user) != 0:
-        last_user_id = last_user[-1].id #ovde uzme id poslednjeg
-        wallet.user_id = last_user_id + 1 #ovde poveca za 1 jer to ce biti id ovog sto se upravo sad registruje
-    else:
-        wallet.user_id = 1
+    last_user_id = last_user[-1].id #ovde uzme id poslednjeg
+    wallet.user_id = last_user_id + 1 #ovde poveca za 1 jer to ce biti id ovog sto se upravo sad registruje
     try:
         #ovde nekako da dobavimo id od usera koji se trenutno registruje
         db.session.add(user)
@@ -119,3 +117,39 @@ def add_funds():
 def wallet(id):
     wallet_list = Account_balance.query.filter_by(user_id=id).all()
     return jsonify(Account_balanceSchema().dump(wallet_list, many=True)), 200
+
+
+@app.route('/currency_exchange', methods=["POST"])
+def currency_exchange():
+    data = ExchangeSchema().dump(request.get_json()) 
+    
+    account_balance = Account_balance.query.filter_by(user_id=data["user_id"]).all()
+    exists = False
+    try:
+        for item in account_balance:
+            if item.currency == data["from_currency"]:
+                if item.amount < data["amount"]:
+                    return "You don't have enough money for exchange.", 400
+                
+                item.amount -= data["amount"]
+                db.session.commit()
+                
+            if item.currency == data["to_currency"]:
+                exists = True
+                item.amount += data["amount"] * data["rate"]
+                db.session.commit()
+                
+        if not exists:
+            amount = data["amount"] * data["rate"]
+            new_item = Account_balance(data["to_currency"], amount)
+            new_item.user_id = data["user_id"]
+            db.session.add(new_item)
+            db.session.commit()
+            
+        return F"Successfully exchanged {data['amount']} {data['from_currency']} to {data['to_currency']}.", 200
+                
+    except Exception:
+        return "Something went wrong. Try again!", 400
+            
+            
+        
