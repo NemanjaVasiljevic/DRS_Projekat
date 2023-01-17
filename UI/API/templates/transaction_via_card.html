@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-    Credit card page
+    Transaction page
 {% endblock %}
 
 {% block content %}
@@ -13,18 +13,18 @@
                 <div class="panel-body" style="border-radius: 25px; padding:5%; background-color: #4254f5;">
                     <form method="POST">
                         {{form.hidden_tag()}}
-                        <h1 style="text-align: center;">Add credit card</h1>
-
+                        <h1 style="text-align: center;">Send money to user</h1>
+                        
                         {{ form.cardNum.label() }}
                         {{ form.cardNum(class="form-control", placeholder="XXXX XXXX XXXX XXXX") }}
                         <br>
 
-                        {{ form.expDate.label() }}
-                        {{ form.expDate(class="form-control", placeholder="mm/yy") }}
+                        {{ form.currency.label() }}
+                        {{ form.currency(class="form-control") }}
                         <br>
 
-                        {{ form.securityCode.label() }}
-                        {{ form.securityCode(class="form-control", placeholder="XXX") }}
+                        {{ form.amount.label() }}
+                        {{ form.amount(class="form-control") }}
                         <br>
 
                         {{ form.submit(class="btn btn-lg btn-block btn-success") }}
@@ -37,4 +37,5 @@
         <div class="col-sm-2"></div>
     </div>
 </div>
+    
 {% endblock %}

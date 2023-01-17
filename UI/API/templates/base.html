@@ -201,14 +201,14 @@ img {
             </li>
           </li>
           {% if session["user"] %}
-          {% if session["user"]["verified"] == 1 %}
+
           <li class="nav-item">
             <div class="dropdown">
               <a href="#" class="meniLink"id="dropDownMenu" style="font-size: 20px;margin-left: 20px;"><b>Transactions</b><i style="margin-left: 5px;" class="fa-solid fa-caret-down"></i></a>
-              <div class="dropdown-content">
-                <a class="link" href="#">Execute a transaction</a>
-                <a class="link" href="#">Transaction history</a>
-                
+                <div class="dropdown-content">
+                  <a class="link" href="{{ url_for('transaction_via_email_page') }}">Execute a transaction via email</a>
+                  <a class="link" href="{{ url_for('transaction_via_card_page') }}">Execute a transaction via card</a>
+                  <a class="link" href="{{ url_for('transaction_history_page') }}">Transaction history</a>
                 </div>
             </div>
           </li>
@@ -218,7 +218,7 @@ img {
           <li class="nav-item">
             <a href="{{ url_for('currency_exchange_page') }}" class="link"  style="font-size: 20px;margin-left: 20px;"><b>Currency exchange</b><span class="sr-only">(current)</span> </a>
           </li>
-          {% endif %}
+
           {% endif %}
         </ul>
         <ul class="navbar-nav">

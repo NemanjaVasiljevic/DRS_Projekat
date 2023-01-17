@@ -1,5 +1,5 @@
 from flask import Flask, render_template, flash, redirect, url_for, jsonify, request, json, session
-from API.forms import RegisterForm, LoginForm, EditProfileForm,CreditCardFrom, AccountBalanceForm, ExchangeForm
+from API.forms import RegisterForm, LoginForm, EditProfileForm,CreditCardFrom, AccountBalanceForm, ExchangeForm, TransactionForm
 from API.models.user import User, UserSchema, LoginSchema
 from API.models.credit_card import CreditCard, CreditCardSchema
 from API.models.account_balance import Account_balance, Account_balanceSchema
@@ -9,6 +9,7 @@ from urllib.error import HTTPError
 import requests
 
 from API import app
+address = "http://127.0.0.1:5000"
 
 @app.route('/')
 @app.route('/home')
@@ -25,7 +26,7 @@ def register_page():
             data = UserSchema().dump(user_to_create)
             data.pop('id')
             data = jsonify(data).get_data()
-            zahtev = req.Request("http://127.0.0.1:5000/register")
+            zahtev = req.Request(f"{address}/register")
             zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
             zahtev.add_header('Content-Length', len(data))
             
@@ -52,7 +53,7 @@ def login_page():
         if form.validate_on_submit():
             user_to_login = LoginSchema().load({"email_address":form.email_address.data, "password":form.password.data})
             data = jsonify(user_to_login).get_data()
-            zahtev = req.Request("http://127.0.0.1:5000/login")
+            zahtev = req.Request(f"{address}/login")
             zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
             zahtev.add_header('Content-Length', len(data))
             try:
@@ -91,7 +92,7 @@ def edit_profile_page():
                 
                 data = UserSchema().dump(user_to_change)
                 data = jsonify(data).get_data()
-                zahtev = req.Request("http://127.0.0.1:5000/edit_profile")
+                zahtev = req.Request(f"{address}/edit_profile")
                 zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
                 zahtev.add_header('Content-Length', len(data))
                 
@@ -127,7 +128,7 @@ def addCard_page():
                     data = CreditCardSchema().dump(card_to_add)
                     data.pop('id')
                     data = jsonify(data).get_data()
-                    zahtev = req.Request("http://127.0.0.1:5000/add_card")
+                    zahtev = req.Request(f"{address}/add_card")
                     zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
                     zahtev.add_header('Content-Length', len(data))
                     
@@ -166,7 +167,7 @@ def add_funds_page():
                     data = Account_balanceSchema().dump(balance_to_add)
                     data.pop('id')
                     data = jsonify(data).get_data()
-                    zahtev = req.Request("http://127.0.0.1:5000/add_funds")
+                    zahtev = req.Request(f"{address}/add_funds")
                     zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
                     zahtev.add_header('Content-Length', len(data))
                     
@@ -193,7 +194,7 @@ def wallet_page():
     if "user" in session:
         
         try:
-            ret = req.urlopen(f"http://127.0.0.1:5000/wallet/{session['user']['id']}")
+            ret = req.urlopen(f"{address}/wallet/{session['user']['id']}")
             wallet = json.loads(ret.read())
             return render_template('wallet.html', wallet=wallet)
         except HTTPError as e:
@@ -205,7 +206,7 @@ def wallet_page():
 
 def get_from_currencies():
     try:
-        ret = req.urlopen(f"http://127.0.0.1:5000/wallet/{session['user']['id']}")
+        ret = req.urlopen(f"{address}/wallet/{session['user']['id']}")
         result = json.loads(ret.read())
         currencies = [r["currency"] for r in result]
         return currencies
@@ -248,7 +249,7 @@ def currency_exchange_page():
                             'to_currency': form.to_currency.data, 'amount': form.amount.data, 'rate': rate}
                     
                     data = jsonify(data).get_data()
-                    zahtev = req.Request("http://127.0.0.1:5000/currency_exchange")
+                    zahtev = req.Request(f"{address}/currency_exchange")
                     zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
                     zahtev.add_header('Content-Length', len(data))
                     
@@ -256,7 +257,10 @@ def currency_exchange_page():
                         ret = req.urlopen(zahtev, data)
                     except HTTPError as e:
                         flash(e.read().decode(), category='danger')
-                        return redirect(url_for('add_funds_page'))
+                        if session["user"]["verified"]:
+                            return redirect(url_for('add_funds_page'))
+                        else:
+                            return redirect(url_for('home_page'))
                         
                     flash(ret.read().decode(), category='success')
                     return redirect(url_for("wallet_page"))
@@ -284,3 +288,80 @@ def currency_exchange_page():
             
     
     return redirect(url_for("login_page"))
+
+
+@app.route('/transaction_via_email', methods=["POST", "GET"])
+def transaction_via_email_page():
+    form = TransactionForm()
+    currencies = get_from_currencies()
+    form.currency.choices = currencies
+    
+    if "user" in session:
+        if request.method == "POST":
+            if form.is_submitted():
+                
+                data = {'sender': session["user"]["id"], 'receiver_email': form.email.data, 'receiver_card': None,
+                        'currency': form.currency.data, 'amount': form.amount.data}
+                
+                data = jsonify(data).get_data()
+                zahtev = req.Request(f"{address}/execute_transaction")
+                zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+                zahtev.add_header('Content-Length', len(data))
+            
+                try:
+                    ret = req.urlopen(zahtev, data)
+                except HTTPError as e:
+                    flash(e.read().decode(), category='danger')
+                    return render_template("transaction_via_email.html", form=form)
+                        
+                flash(ret.read().decode(), category='success')
+                return redirect(url_for("transaction_history_page"))
+
+            if form.errors != {}:
+                for err_msg in form.errors.values():
+                    flash(err_msg.pop(), category='danger')
+            
+    
+        return render_template('transaction_via_email.html', form=form)
+    
+    return redirect(url_for('login_page'))
+
+@app.route('/transaction_via_card', methods=["POST", "GET"])
+def transaction_via_card_page():
+    form = TransactionForm()
+    currencies = get_from_currencies()
+    form.currency.choices = currencies
+    
+    if "user" in session:
+        if request.method == "POST":
+            if form.is_submitted():
+                
+                data = {'sender': session["user"]["id"], 'receiver_email': None, 'receiver_card': form.cardNum.data,
+                        'currency': form.currency.data, 'amount': form.amount.data}
+                
+                data = jsonify(data).get_data()
+                zahtev = req.Request(f"{address}/execute_transaction")
+                zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+                zahtev.add_header('Content-Length', len(data))
+            
+                try:
+                    ret = req.urlopen(zahtev, data)
+                except HTTPError as e:
+                    flash(e.read().decode(), category='danger')
+                    return render_template("transaction_via_card.html", form=form)
+                        
+                flash(ret.read().decode(), category='success')
+                return redirect(url_for("transaction_history_page"))
+
+            if form.errors != {}:
+                for err_msg in form.errors.values():
+                    flash(err_msg.pop(), category='danger')
+            
+        
+        return render_template('transaction_via_card.html', form=form)
+    
+    return redirect(url_for('login_page'))
+
+@app.route('/transaction_history', methods=["POST", "GET"])
+def transaction_history_page():
+    return render_template('transaction_history.html')

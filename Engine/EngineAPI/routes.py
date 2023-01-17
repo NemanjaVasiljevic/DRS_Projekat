@@ -151,5 +151,7 @@ def currency_exchange():
     except Exception:
         return "Something went wrong. Try again!", 400
             
-            
-        
+@app.route('/execute_transaction', methods=["POST"])
+def transaction():
+    return "ok", 200
+    

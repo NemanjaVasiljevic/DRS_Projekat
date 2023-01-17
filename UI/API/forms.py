@@ -48,3 +48,10 @@ class ExchangeForm(FlaskForm):
     amount = StringField(validators=[])
     refresh = SubmitField(label="Refresh table")
     submit = SubmitField(label="Exchange")
+
+class TransactionForm(FlaskForm):
+    email = StringField(label='Send money to: ', validators=[Email('Incorrect format for email address.'),DataRequired()])
+    cardNum = StringField(label='Card number: ', validators=[Length(min = 16, max = 16),DataRequired()])
+    currency = SelectField(label="Currency: ", validators=[])
+    amount = StringField(label="Amount: ", validators=[Length(min = 1, max = 256),DataRequired()])
+    submit = SubmitField(label='Send')
