@@ -290,75 +290,66 @@ def currency_exchange_page():
     return redirect(url_for("login_page"))
 
 
-@app.route('/transaction_via_email', methods=["POST", "GET"])
-def transaction_via_email_page():
+@app.route('/execute_transaction', methods=["POST", "GET"])
+def execute_transaction_page():
     form = TransactionForm()
     currencies = get_from_currencies()
     form.currency.choices = currencies
-    
     if "user" in session:
         if request.method == "POST":
             if form.is_submitted():
                 
-                data = {'sender': session["user"]["id"], 'receiver_email': form.email.data, 'receiver_card': None,
-                        'currency': form.currency.data, 'amount': form.amount.data}
+                if form.switch.data:
+                    return render_template('execute_transaction.html', form=form, card=True)
                 
-                data = jsonify(data).get_data()
-                zahtev = req.Request(f"{address}/execute_transaction")
-                zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
-                zahtev.add_header('Content-Length', len(data))
-            
-                try:
-                    ret = req.urlopen(zahtev, data)
-                except HTTPError as e:
-                    flash(e.read().decode(), category='danger')
-                    return render_template("transaction_via_email.html", form=form)
+                if form.submit.data:
+                    
+                    if form.email.data == '':
+                        flash('Email cannot be empty!', category='danger')
+                        return render_template("execute_transaction.html", form=form, card=False)
                         
-                flash(ret.read().decode(), category='success')
-                return redirect(url_for("transaction_history_page"))
-
-            if form.errors != {}:
-                for err_msg in form.errors.values():
-                    flash(err_msg.pop(), category='danger')
-            
-    
-        return render_template('transaction_via_email.html', form=form)
-    
-    return redirect(url_for('login_page'))
-
-@app.route('/transaction_via_card', methods=["POST", "GET"])
-def transaction_via_card_page():
-    form = TransactionForm()
-    currencies = get_from_currencies()
-    form.currency.choices = currencies
-    
-    if "user" in session:
-        if request.method == "POST":
-            if form.is_submitted():
-                
-                data = {'sender': session["user"]["id"], 'receiver_email': None, 'receiver_card': form.cardNum.data,
+                    if form.cardNum.data == '':
+                        flash('Card number cannot be empty!', category='danger')
+                        return render_template("execute_transaction.html", form=form, card=True)
+                    
+                    if form.amount.data == '':
+                        flash('Amount cannot be empty!', category='danger')
+                        if form.email.data == None:
+                            return render_template("execute_transaction.html", form=form, card=True)
+                        else:
+                            return render_template("execute_transaction.html", form=form, card=False)
+                    
+                    try:
+                        float(form.amount.data)
+                    except Exception:
+                        flash('Amount must be number!', category='danger')
+                        if form.email.data == None:
+                            return render_template("execute_transaction.html", form=form, card=True)
+                        else:
+                            return render_template("execute_transaction.html", form=form, card=False)
+                    
+                    data = {'sender': session["user"]["id"], 'receiver_email': form.email.data, 'receiver_card': form.cardNum.data,
                         'currency': form.currency.data, 'amount': form.amount.data}
+                    
+                    data_to_send = jsonify(data).get_data()
+                    zahtev = req.Request(f"{address}/execute_transaction")
+                    zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
+                    zahtev.add_header('Content-Length', len(data_to_send))
                 
-                data = jsonify(data).get_data()
-                zahtev = req.Request(f"{address}/execute_transaction")
-                zahtev.add_header('Content-Type', 'application/json; charset=utf-8')
-                zahtev.add_header('Content-Length', len(data))
+                    try:
+                        ret = req.urlopen(zahtev, data_to_send)
+                    except HTTPError as e:
+                        flash(e.read().decode(), category='danger')
+                        if(data['receiver_email'] == None):
+                            return render_template("execute_transaction.html", form=form, card=True)
+                        else:
+                            return render_template("execute_transaction.html", form=form, card=False)
+                            
+                    flash(ret.read().decode(), category='success')
+                    return redirect(url_for("transaction_history_page"))
             
-                try:
-                    ret = req.urlopen(zahtev, data)
-                except HTTPError as e:
-                    flash(e.read().decode(), category='danger')
-                    return render_template("transaction_via_card.html", form=form)
-                        
-                flash(ret.read().decode(), category='success')
-                return redirect(url_for("transaction_history_page"))
-
-            if form.errors != {}:
-                for err_msg in form.errors.values():
-                    flash(err_msg.pop(), category='danger')
             
-        
-        return render_template('transaction_via_card.html', form=form)
+        return render_template('execute_transaction.html', form=form, card=False)
     
     return redirect(url_for('login_page'))
 
