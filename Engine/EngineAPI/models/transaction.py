@@ -32,6 +32,17 @@ class TransactionSchema(Schema):
     receiver_card = fields.String()
     currency = fields.String()
     amount = fields.Number()
+    
+    @post_load
+    def make_transaction(self, data, **kwargs):
+        return Transaction(**data)
+    
+class TransactionSchemaThread(Schema):
+    id = fields.Number()
+    sender = fields.Number()
+    receiver = fields.Number()
+    currency = fields.String()
+    amount = fields.Number()
     state = EnumField(TransactionState)
     
     @post_load

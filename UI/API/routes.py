@@ -304,6 +304,7 @@ def execute_transaction_page():
                 
                 if form.submit.data:
                     
+                    #validacija
                     if form.email.data == '':
                         flash('Email cannot be empty!', category='danger')
                         return render_template("execute_transaction.html", form=form, card=False)
@@ -327,6 +328,7 @@ def execute_transaction_page():
                             return render_template("execute_transaction.html", form=form, card=True)
                         else:
                             return render_template("execute_transaction.html", form=form, card=False)
+                    ########################################
                     
                     data = {'sender': session["user"]["id"], 'receiver_email': form.email.data, 'receiver_card': form.cardNum.data,
                         'currency': form.currency.data, 'amount': form.amount.data}

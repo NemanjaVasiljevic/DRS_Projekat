@@ -5,12 +5,14 @@ class Account_balance(db.Model):
     id = db.Column(db.Integer(), primary_key = True)
     currency = db.Column(db.String(3), nullable = False)
     amount = db.Column(db.Float(), nullable = False)
+    reserved = db.Column(db.Float(), nullable=True)
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id'))
     
-    def __init__(self,currency="RSD", amount= 0, id = None,user_id=-1):
+    def __init__(self,currency="RSD", amount= 0, id = None,user_id=-1, reserved = 0):
         self.id = id
         self.currency = currency
         self.amount = amount
+        self.reserved = reserved
         self.user_id = user_id
         
         
@@ -18,6 +20,7 @@ class Account_balanceSchema(Schema):
     id = fields.Number()
     currency = fields.String()
     amount = fields.Number()
+    reserved = fields.Number()
     user_id = fields.Number()
     
     @post_load
