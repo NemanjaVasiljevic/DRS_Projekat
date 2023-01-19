@@ -14,7 +14,7 @@ Pay into an account
                         {{form.hidden_tag()}}
                         <h1 style="text-align: center;">Add funds to your online wallet</h1>
                         {{ form.amount.label() }}
-                        {{ form.amount(class="form-control") }}
+                        {{ form.amount(class="form-control", placeholder="RSD") }}
                         <br>
 
                         {{ form.submit(class="btn btn-lg btn-block btn-success") }}

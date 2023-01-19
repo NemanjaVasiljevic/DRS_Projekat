@@ -14,6 +14,7 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     verified = db.Column(db.Boolean(), nullable=False)
     credit_card = db.relationship('CreditCard', backref='owned_user', lazy=True)
+    account_balance = db.relationship('Account_balance', backref='owned_user', lazy=True)
 
     def __init__(self, name, last_name, address, city, country, tel_number, email_address, password, verified = False, id = None):
         self.id = id

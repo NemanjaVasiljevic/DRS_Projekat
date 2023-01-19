@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}
+    Transaction page
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-8">
+            <div class="panel panel-default" style="margin:5%">
+                <div class="panel-body" style="border-radius: 25px; padding:5%; background-color: #4254f5;">
+                    <form method="POST">
+                        {{form.hidden_tag()}}
+                        
+                        {% if card %}
+                            <h1 style="text-align: center;">Send money to user's credit card</h1>
+                            {{ form.cardNum.label() }}
+                            {{ form.cardNum(class="form-control", placeholder="XXXX XXXX XXXX XXXX") }}
+                            <br>
+                        {% else %}
+                            <h1 style="text-align: center;">Send money to user's online account</h1>
+                            {{ form.email.label() }}
+                            {{ form.email(class="form-control", placeholder="Email address") }}
+                            <br>
+                        {% endif %}
+
+                        {{ form.currency.label() }}
+                        {{ form.currency(class="form-control") }}
+                        <br>
+
+                        {{ form.amount.label() }}
+                        {{ form.amount(class="form-control") }}
+                        <br>
+
+                        <div class="checkbox mb-3" style="text-align:center">
+                            <h6>Do you want to send money to user's credit card?</h6>
+                            {{ form.switch(class="btn btn-info", style="width:25%") }}
+                        </div>
+
+                        {{ form.submit(class="btn btn-lg btn-block btn-success") }}
+                        <br>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-2"></div>
+    </div>
+</div>
+    
+{% endblock %}

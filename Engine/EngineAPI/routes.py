@@ -1,11 +1,16 @@
-from EngineAPI import app, db
+from EngineAPI import app, db, cc, pc
 from EngineAPI.models.user import UserSchema, LoginSchema, User, ExchangeSchema
 from EngineAPI.models.credit_card import CreditCard, CreditCardSchema
 from EngineAPI.models.account_balance import Account_balance, Account_balanceSchema
-from flask import request, jsonify, json, session
-from flask_login import login_user, current_user, login_required
+from EngineAPI.models.transaction import Transaction, TransactionSchema, TransactionState, TransactionSchemaThread
+from flask import request, jsonify, json
 import requests
+import threading
+from time import sleep
 
+lock = threading.Lock()
+
+db.create_all()
 
 #pomocna funkcija
 def get_value(to_currency, from_currency):
@@ -150,6 +155,147 @@ def currency_exchange():
                 
     except Exception:
         return "Something went wrong. Try again!", 400
+    
             
-            
+@app.route('/execute_transaction', methods=["POST"])
+def transaction():
+    data = TransactionSchema().dump(request.get_json())
+
+    card = None
+    receiver_account_balance = None
+    
+    sender = User.query.filter_by(id=data["sender"]).first()
+    
+    if data["receiver_email"] != None:
+        receiver = User.query.filter_by(email_address=data["receiver_email"]).first()
+        if receiver == None:
+            return f"User with email {data['receiver_email']} does not exist!", 404
         
+        r_account_balance = Account_balance.query.filter_by(user_id=receiver.id).all()
+        for item in r_account_balance:
+            if item.currency == data["currency"]:
+                receiver_account_balance = item
+                break
+        
+    else:
+        card = CreditCard.query.filter_by(cardNum=data["receiver_card"]).first()
+        if card == None:
+            return "Incorrect card number or user is not verified.", 404
+        
+        receiver = User.query.filter_by(id=card.owner).first()
+
+    if receiver.id == sender.id:
+        return "You cannot send money to yourself.", 400
+    
+    sender_account_balance = Account_balance.query.filter_by(user_id=sender.id).all()
+    for item in sender_account_balance:
+        if item.currency == data["currency"]:
+            if item.amount < data["amount"]:
+                transaction = Transaction(sender.id, receiver.id, data["currency"], data["amount"], TransactionState.REFUSED, None)
+                db.session.add(transaction)
+                db.session.commit()
+                return "You don't have enough money for transaction.", 400
+            
+            item.amount -= data["amount"]
+            item.reserved += data["amount"]
+            db.session.commit()
+            sender_account_balance = item
+            
+    transaction = Transaction(sender.id, receiver.id, data["currency"], data["amount"], TransactionState.PROCESSING, None)
+    db.session.add(transaction)
+    db.session.commit()
+
+    if card == None:
+        p = threading.Thread(target=processing_transaction, args=(receiver.id, transaction.id, sender_account_balance.id, receiver_account_balance.id, -1))
+    else:
+        p = threading.Thread(target=processing_transaction, args=(receiver.id, transaction.id, sender_account_balance.id, -1, card.id))
+        
+    p.start()
+    return "Transaction successfully started.", 201
+
+
+def processing_transaction(receiver_id, transaction_id, sender_account_balance_id, receiver_account_balance_id, card_id):
+    with app.app_context():
+        lock.acquire()
+        
+        receiver = User.query.filter_by(id=receiver_id).first()
+        transaction = Transaction.query.filter_by(id=transaction_id).first()
+        sender_account_balance = Account_balance.query.filter_by(id=sender_account_balance_id).first()
+        receiver_account_balance = Account_balance.query.filter_by(id=receiver_account_balance_id).first()
+        card = CreditCard.query.filter_by(id=card_id).first()
+        
+        pc.send(transaction)
+        pc.send(sender_account_balance)
+        pc.send(receiver_account_balance)
+        pc.send(card)
+        pc.send(receiver)
+        
+        transaction_recv = pc.recv()
+        sender_account_balance_recv = pc.recv()
+        receiver_account_balance_recv = pc.recv()
+        card_recv = pc.recv()
+        
+        
+        transaction = Transaction.query.filter_by(id=transaction_recv.id).first()
+        sender_account_balance = Account_balance.query.filter_by(id=sender_account_balance_recv.id).first()
+        #salje se na karticu
+        if card:
+            card = CreditCard.query.filter_by(id=card_recv.id).first()
+            card.amount = card_recv.amount
+            
+        else:
+            receiver_account_balance = Account_balance.query.filter_by(id=receiver_account_balance_recv.id).first()
+            receiver_account_balance.amount = receiver_account_balance_recv.amount
+            
+        transaction.state = transaction_recv.state
+        sender_account_balance.reserved = sender_account_balance_recv.reserved
+        db.session.commit()
+        
+        lock.release()
+    
+def transaction_process(cc):
+    while True:
+        try:
+            transaction = cc.recv()
+            sender_account_balance = cc.recv()
+            receiver_account_balance = cc.recv()
+            card = cc.recv()
+            receiver = cc.recv()
+            
+            sleep(60)
+            #na karticu, ovde ima konverzija valute jer su na kartici dinari
+            if card:
+                if transaction.currency != "RSD":
+                    value = get_value(transaction.currency, "RSD")
+                    card.amount += value * transaction.amount
+                else:
+                    card.amount += transaction.amount
+                    
+                sender_account_balance.reserved = 0
+                transaction.state = TransactionState.PROCESSED
+                
+                cc.send(transaction)
+                cc.send(sender_account_balance)
+                cc.send(receiver_account_balance)
+                cc.send(card)
+                
+            else:
+                #kod sender_account_balance je vec rezervisan iznos, sad treba dodati iznos na receiver_account_balance
+                
+                if receiver_account_balance:
+                    receiver_account_balance.amount += transaction.amount
+                else:
+                    new_item = Account_balance(transaction.currency, transaction.amount)
+                    new_item.user_id = receiver.id
+                    receiver_account_balance = new_item
+                
+                sender_account_balance.reserved = 0
+                transaction.state = TransactionState.PROCESSED
+                
+                cc.send(transaction)
+                cc.send(sender_account_balance)
+                cc.send(receiver_account_balance)
+                cc.send(card)
+                             
+        except KeyboardInterrupt:
+            break
