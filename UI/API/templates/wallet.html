@@ -4,25 +4,32 @@
 {% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="static/datatables.min.css"/>
     <br><h1 id="walletH1" style="text-align:center">Account balance</h1>
-    <div id="wallet_table"class="row" style="margin-top:20px; margin-left:250px; margin-right:250px">
-       <table class="table table-hover table-dark" style="text-align:center">
+    <div id="wallet_table" style="margin-top:20px; margin-left:300px; margin-right:300px">
+       <table id="wallet" class="table table-hover table-light" style="text-align:center">
           <thead>
              <tr>
-                <!-- Your Columns HERE -->
-                <th scope="col">Currency</th>
-                <th scope="col">Amount</th>
+                <th scope="col" class="trans_history_th">Currency</th>
+                <th scope="col" class="trans_history_th">Amount</th>
              </tr>
           </thead>
           <tbody>
-             <!-- Your rows inside the table HERE: -->
              {% for item in wallet %}
              <tr>
-                <td>{{ item.currency }}</td>
-                <td>{{ item.amount }}</td>
+                <td class="trans_history_td">{{ item.currency }}</td>
+                <td class="trans_history_td">{{ item.amount }}</td>
              </tr>
              {% endfor %}
           </tbody>
        </table>
     </div>
+    <script src="static/jquery-3.6.0.min.js"></script>
+    <script src="static/datatables.min.js"></script>
+    <script>
+        $(document).ready( function () {
+            $.noConflict();
+            var table1 = $('#wallet').DataTable()
+        } );
+    </script>
 {% endblock %}

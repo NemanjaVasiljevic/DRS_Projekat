@@ -4,27 +4,27 @@
 {% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="static/datatables.min.css"/>
     <div id="curr_exc_id" class="row" style="margin-top:20px; margin-left:30px; margin-right:30px">
         <div id="excRate"class="col-6">
             <h1 style="text-align:center">Exchange rates table</h1>
             <br>
-            <table class="table table-hover table-dark" style="text-align:center">
+            <table id="exchange_rates" class="table table-hover table-light" style="text-align:center; color:white;">
                 <thead>
                     <tr>
-                        <!-- Your Columns HERE -->
-                        <th scope="col">Currency</th>
-                        <th scope="col">Exchange rate</th>
+                        <th scope="col" class="trans_history_th" style="width:50%">Currency</th>
+                        <th scope="col" class="trans_history_th" style="width:50%">Exchange rate</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for key, value in table.items() %}
                         <tr>
-                            <td>{{ key }}</td>
-                            <td>{{ value }}</td>
+                            <td class="trans_history_td">{{ key }}</td>
+                            <td class="trans_history_td">{{ value }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+            </table><br>
         </div>
         <div id="excRate_form"class="col-6">
             <h1 style="text-align:center">Exchange</h1>
@@ -59,4 +59,12 @@
             </div>
         </div>
     </div>
+    <script src="static/jquery-3.6.0.min.js"></script>
+    <script src="static/datatables.min.js"></script>
+    <script>
+        $(document).ready( function () {
+            $.noConflict();
+            var table1 = $('#exchange_rates').DataTable()
+        } );
+    </script>
  {% endblock %}
