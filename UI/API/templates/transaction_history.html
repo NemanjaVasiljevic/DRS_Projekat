@@ -1,8 +1,85 @@
 {% extends 'base.html' %}
-{% block title %}
-    Transaction history page
+{% block title%}
+Transaction history page
 {% endblock %}
 
 {% block content %}
-    
+<link rel="stylesheet" href="static/datatables.min.css"/>
+
+    <div class="container" id="history_container">
+       
+        <div class="row ">
+            <div class="col-sm-12 text-center">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h1>Sent transactions</h1>
+                    </div>
+                    <div class="panel-body">
+                        <table id="poslate" class="table table-hover table-light" style="text-align:center;">
+                            <thead>
+                                <tr>
+                                    <th class="trans_history_th">Currency</th>
+                                    <th class="trans_history_th">Amount</th>
+                                    <th class="trans_history_th">State</th>
+                                    <th class="trans_history_th">Receiver</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in sent %}
+                                    <tr style="border:1px solid black">
+                                        <td class="trans_history_td">{{ t['currency'] }}</td>
+                                        <td class="trans_history_td">{{ t['amount'] }}</td>
+                                        <td class="trans_history_td">{{ t['state'] }}</td>
+                                        <td class="trans_history_td">{{ t['receiver'] }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row ">
+            <div class="col-sm-12 text-center">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h1>Received transactions</h1>
+                    </div>
+                    <div class="panel-body">
+                        <table id="primljene" class="table table-hover table-light" style="text-align:center;">
+                            <thead>
+                                <tr>
+                                    <th class="trans_history_th" >Currency</th>
+                                    <th class="trans_history_th" >Amount</th>
+                                    <th class="trans_history_th">State</th>
+                                    <th class="trans_history_th">Sender</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in received %}
+                                    <tr style="border:1px solid black">
+                                        <td class="trans_history_td">{{ t['currency'] }}</td>
+                                        <td class="trans_history_td">{{ t['amount'] }}</td>
+                                        <td class="trans_history_td">{{ t['state'] }}</td>
+                                        <td class="trans_history_td">{{ t['sender'] }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="static/jquery-3.6.0.min.js"></script>
+<script src="static/datatables.min.js"></script>
+<script>
+    $(document).ready( function () {
+        $.noConflict();
+        var table1 = $('#poslate').DataTable()
+        var table2 = $('#primljene').DataTable()
+    } );
+</script>
+
+
 {% endblock %}

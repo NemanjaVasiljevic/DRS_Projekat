@@ -78,8 +78,9 @@ def logout_page():
     if "user" in session:
         session.pop("user")
         flash(f"Successfully logged out.", category='info')
-        
-    return render_template('home.html')
+        return render_template('home.html')
+    
+    return redirect(url_for('login_page'))
 
 @app.route('/edit_profile', methods=["GET", "POST"])
 def edit_profile_page():
@@ -330,8 +331,8 @@ def execute_transaction_page():
                             return render_template("execute_transaction.html", form=form, card=False)
                     ########################################
                     
-                    data = {'sender': session["user"]["id"], 'receiver_email': form.email.data, 'receiver_card': form.cardNum.data,
-                        'currency': form.currency.data, 'amount': form.amount.data}
+                    data = {'sender': session["user"]["email_address"], 'receiver_email': form.email.data, 
+                            'receiver_card': form.cardNum.data, 'currency': form.currency.data, 'amount': form.amount.data}
                     
                     data_to_send = jsonify(data).get_data()
                     zahtev = req.Request(f"{address}/execute_transaction")
@@ -355,6 +356,25 @@ def execute_transaction_page():
     
     return redirect(url_for('login_page'))
 
-@app.route('/transaction_history', methods=["POST", "GET"])
+@app.route('/transaction_history', methods=["GET"])
 def transaction_history_page():
-    return render_template('transaction_history.html')
+    if "user" in session:
+        sent_transactions = []
+        received_transactions = []
+        try:
+            ret = req.urlopen(f'{address}/transaction_history/{session["user"]["email_address"]}')
+            transactions = json.loads(ret.read())
+            
+            for t in transactions:
+                if t["sender"] == session["user"]["email_address"]:
+                    sent_transactions.append(t)
+                    
+                if t["receiver"] == session["user"]["email_address"]:
+                    received_transactions.append(t)
+            
+            return render_template('transaction_history.html', sent=sent_transactions, received=received_transactions)
+        except HTTPError as e:
+            flash(e.read().decode(), category='danger')
+            return redirect(url_for('home_page'))
+    
+    return redirect(url_for('login_page'))

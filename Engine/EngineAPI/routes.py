@@ -2,15 +2,13 @@ from EngineAPI import app, db, cc, pc
 from EngineAPI.models.user import UserSchema, LoginSchema, User, ExchangeSchema
 from EngineAPI.models.credit_card import CreditCard, CreditCardSchema
 from EngineAPI.models.account_balance import Account_balance, Account_balanceSchema
-from EngineAPI.models.transaction import Transaction, TransactionSchema, TransactionState, TransactionSchemaThread
+from EngineAPI.models.transaction import Transaction, TransactionSchema, TransactionState, TransactionSchema2
 from flask import request, jsonify, json
 import requests
 import threading
 from time import sleep
 
 lock = threading.Lock()
-
-db.create_all()
 
 #pomocna funkcija
 def get_value(to_currency, from_currency):
@@ -156,7 +154,14 @@ def currency_exchange():
     except Exception:
         return "Something went wrong. Try again!", 400
     
-            
+@app.route('/transaction_history/<email_address>', methods=["GET"])
+def transaction_history(email_address):
+    sent_transactions = Transaction.query.filter_by(sender=email_address).all()
+    received_transactions = Transaction.query.filter_by(receiver=email_address).all()
+    transactions = sent_transactions + received_transactions
+    return jsonify(TransactionSchema2().dump(transactions, many=True))
+
+
 @app.route('/execute_transaction', methods=["POST"])
 def transaction():
     data = TransactionSchema().dump(request.get_json())
@@ -164,7 +169,7 @@ def transaction():
     card = None
     receiver_account_balance = None
     
-    sender = User.query.filter_by(id=data["sender"]).first()
+    sender = User.query.filter_by(email_address=data["sender"]).first()
     
     if data["receiver_email"] != None:
         receiver = User.query.filter_by(email_address=data["receiver_email"]).first()
@@ -191,7 +196,7 @@ def transaction():
     for item in sender_account_balance:
         if item.currency == data["currency"]:
             if item.amount < data["amount"]:
-                transaction = Transaction(sender.id, receiver.id, data["currency"], data["amount"], TransactionState.REFUSED, None)
+                transaction = Transaction(sender.email_address, receiver.email_address, data["currency"], data["amount"], TransactionState.REFUSED, None)
                 db.session.add(transaction)
                 db.session.commit()
                 return "You don't have enough money for transaction.", 400
@@ -201,7 +206,7 @@ def transaction():
             db.session.commit()
             sender_account_balance = item
             
-    transaction = Transaction(sender.id, receiver.id, data["currency"], data["amount"], TransactionState.PROCESSING, None)
+    transaction = Transaction(sender.email_address, receiver.email_address, data["currency"], data["amount"], TransactionState.PROCESSING, None)
     db.session.add(transaction)
     db.session.commit()
 
@@ -211,7 +216,7 @@ def transaction():
         p = threading.Thread(target=processing_transaction, args=(receiver.id, transaction.id, sender_account_balance.id, -1, card.id))
         
     p.start()
-    return "Transaction successfully started.", 201
+    return "Transaction successfully started. Processing transaction...", 201
 
 
 def processing_transaction(receiver_id, transaction_id, sender_account_balance_id, receiver_account_balance_id, card_id):

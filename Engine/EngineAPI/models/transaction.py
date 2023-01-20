@@ -11,8 +11,8 @@ class TransactionState(Enum):
 class Transaction(db.Model):
     __tablename__ = 'transactions'
     id = db.Column(db.Integer(), primary_key=True)
-    sender = db.Column(db.Integer(), db.ForeignKey('users.id'))
-    receiver = db.Column(db.Integer(), db.ForeignKey('users.id'))
+    sender = db.Column(db.String(50), db.ForeignKey('users.email_address'))
+    receiver = db.Column(db.String(50), db.ForeignKey('users.email_address'))
     currency = db.Column(db.String(10), nullable=False)
     amount = db.Column(db.Float(), nullable=False)
     state = db.Column(db.Enum(TransactionState), nullable=False)
@@ -27,7 +27,7 @@ class Transaction(db.Model):
 
 class TransactionSchema(Schema):
     id = fields.Number()
-    sender = fields.Number()
+    sender = fields.String()
     receiver_email = fields.String()
     receiver_card = fields.String()
     currency = fields.String()
@@ -37,10 +37,10 @@ class TransactionSchema(Schema):
     def make_transaction(self, data, **kwargs):
         return Transaction(**data)
     
-class TransactionSchemaThread(Schema):
+class TransactionSchema2(Schema):
     id = fields.Number()
-    sender = fields.Number()
-    receiver = fields.Number()
+    sender = fields.String()
+    receiver = fields.String()
     currency = fields.String()
     amount = fields.Number()
     state = EnumField(TransactionState)

@@ -11,7 +11,7 @@ class Transaction():
 class TransactionSchema(Schema):
     id = fields.Number()
     sender = fields.Number()
-    receiver = fields.Number()
+    receiver = fields.String()
     currency = fields.String()
     amount = fields.Number()
     
