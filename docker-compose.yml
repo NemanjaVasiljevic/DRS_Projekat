@@ -1,0 +1,31 @@
+version: '3'
+
+
+services:
+
+  ui:
+    build: ./UI
+    container_name: ui-container
+    volumes:
+    - ./UI:/UI
+    working_dir: /UI
+    ports:
+    - "5001:5001"
+    networks:
+    - mynetwork
+
+  engine:
+    build: ./Engine
+    container_name: engine-container
+    volumes:
+    - ./Engine:/Engine
+    
+    working_dir: /Engine
+    ports:
+    - "5000:5000"
+    networks:
+    - mynetwork
+    
+networks:
+    mynetwork:
+      driver: bridge

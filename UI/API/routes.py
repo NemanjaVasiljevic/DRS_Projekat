@@ -9,12 +9,13 @@ from urllib.error import HTTPError
 import requests
 
 from API import app
-address = "http://127.0.0.1:5000"
+address = "http://engine-container:5000"
 
 @app.route('/')
 @app.route('/home')
 def home_page():
     return render_template("home.html")
+
 
 @app.route('/register', methods=["POST", "GET"])
 def register_page():
@@ -45,6 +46,8 @@ def register_page():
                 
     return render_template('register.html', form=form)
     
+    
+    
 
 @app.route('/login', methods=["POST", "GET"])
 def login_page():
@@ -73,6 +76,8 @@ def login_page():
 
     return render_template('login.html', form=form)
 
+
+
 @app.route('/logout')
 def logout_page():
     if "user" in session:
@@ -90,6 +95,7 @@ def edit_profile_page():
             if form.validate_on_submit():
                 user_to_change = User(form.name.data, form.last_name.data, form.address.data, form.city.data, form.country.data, form.tel_number.data, form.email_address.data, form.password1.data)
                 user_to_change.id = session["user"]["id"]
+                user_to_change.verified = session["user"]["verified"]
                 
                 data = UserSchema().dump(user_to_change)
                 data = jsonify(data).get_data()
@@ -115,6 +121,8 @@ def edit_profile_page():
         return render_template('edit_profile.html', form=form)
         
     return redirect(url_for('login_page'))
+
+
 
 @app.route('/add_card', methods=["POST", "GET"])
 def addCard_page():
@@ -155,6 +163,8 @@ def addCard_page():
         
     return redirect(url_for('login_page'))
 
+
+
 @app.route('/add_funds', methods=["POST", "GET"])
 def add_funds_page():
     form = AccountBalanceForm()
@@ -190,6 +200,8 @@ def add_funds_page():
     return redirect(url_for('login_page'))
 
 
+
+
 @app.route('/wallet', methods=["GET"])
 def wallet_page():
     if "user" in session:
@@ -205,6 +217,8 @@ def wallet_page():
     return redirect(url_for("login_page"))
 
 
+
+
 def get_from_currencies():
     try:
         ret = req.urlopen(f"{address}/wallet/{session['user']['id']}")
@@ -215,6 +229,8 @@ def get_from_currencies():
         flash(e.read().decode(), category='danger')
         return redirect(url_for("home_page"))
     
+    
+    
 def get_exchange_rates(from_currency):
     url = "https://api.exchangerate-api.com/v4/latest/" + from_currency
     response = requests.request("GET", url)
@@ -222,6 +238,7 @@ def get_exchange_rates(from_currency):
     table = result.get("rates")
     table.pop(from_currency)
     return table
+
 
 
 @app.route('/currency_exchange', methods=["POST", "GET"])
@@ -291,6 +308,7 @@ def currency_exchange_page():
     return redirect(url_for("login_page"))
 
 
+
 @app.route('/execute_transaction', methods=["POST", "GET"])
 def execute_transaction_page():
     form = TransactionForm()
@@ -355,6 +373,9 @@ def execute_transaction_page():
         return render_template('execute_transaction.html', form=form, card=False)
     
     return redirect(url_for('login_page'))
+
+
+
 
 @app.route('/transaction_history', methods=["GET"])
 def transaction_history_page():

@@ -37,7 +37,6 @@ class CreditCardFrom(FlaskForm):
     securityCode = StringField(label='Security code: ', validators=[Length(min = 3, max = 3),DataRequired()])
     submit = SubmitField(label='Add card')
     
-    
 class AccountBalanceForm(FlaskForm):
     amount = StringField(label='Amount: ', validators=[Length(min = 1, max = 256),DataRequired()])
     submit = SubmitField(label='Add funds')
